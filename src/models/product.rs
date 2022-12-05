@@ -235,6 +235,53 @@ pub struct FavouriteProducts {
     product_id: i32,
 }
 
+impl FavouriteProducts {
+    pub fn add_favourite(u_id: i32, p_id: i32, conn: &PgConnection) -> Result<(),Error> {
+        
+        use rocket::http::Status;
+        use crate::schema::favourites::dsl::*;
+        if favourites
+            .filter(user_id.eq(u_id))
+            .filter(product_id.eq(p_id))
+            .get_results::<FavouriteProducts>(conn)?
+            .len() > 0 {
+            return Err(Error {
+                status: Status::InternalServerError,
+                message: "product already exists in favourites".into(),
+
+            });
+        }
+        diesel::insert_into(favourites)
+        .values(&(user_id.eq(u_id),product_id.eq(p_id)))
+        .execute(conn)?;
+        Ok(())
+    }
+
+    pub fn delete_favourite(u_id: i32, p_id: i32, conn: &PgConnection) -> Result<(),Error> {
+        
+        use rocket::http::Status;
+        use crate::schema::favourites::dsl::*;
+
+        if favourites
+            .filter(user_id.eq(u_id))
+            .filter(product_id.eq(p_id))
+            .get_results::<FavouriteProducts>(conn)?
+            .len() == 0 {
+            return Err(Error {
+                status: Status::InternalServerError,
+                message: "there is on such product in favourites to delete".into(),
+            });
+        }
+        diesel::delete(favourites
+            .filter(user_id.eq(u_id))
+            .filter(product_id.eq(p_id)))
+        .execute(conn)?;
+        Ok(())
+
+    }
+
+}
+
 #[derive(Insertable,AsChangeset,Debug,Clone)]
 #[table_name="favourites"]
 pub struct NewFavourites {
@@ -367,6 +414,13 @@ pub struct Product {
 
 use rocket_contrib::templates::tera::Context;
 
+#[derive(Clone, Debug, Serialize)]
+pub struct ProductWithFav {
+    prod: Product,
+    favourites: usize,
+    days_left: i64,
+}
+
 impl Product {
     pub fn get_context(&self) -> Context {
         let mut context = Context::new();
@@ -381,31 +435,41 @@ impl Product {
             .filter(id.eq(pr_id))
             .get_result::<Product>(conn)
             .expect("error loading product")
+
     }
 
-    pub fn get_active_products(u_id: i32, conn: &PgConnection) -> Result<Vec<Product>,Error> {
+    pub fn get_products_by_status_and_user(stat: String, u_id: i32, conn: &PgConnection) -> Result<Vec<ProductWithFav>,Error> {
 
         use crate::schema::products::dsl::*;
+        use crate::schema::favourites::dsl::*;
+
+        use chrono::{NaiveDate, NaiveDateTime, Duration};
+
+let dt: NaiveDateTime = NaiveDate::from_ymd(2016, 7, 8).and_hms(9, 10, 11);
 
         let r = products
             .filter(seller_id.eq(u_id))
-            .filter(status.eq("published"))
+            .filter(status.eq(stat))
             .get_results::<Product>(conn)?;
+
+        let r = r.into_iter().map( | p | {
+            ProductWithFav {
+                favourites: favourites
+                .filter(product_id.eq(p.id))
+                .get_results::<FavouriteProducts>(conn)
+                .expect("Error getting product favourites")
+                .len(),
+                days_left: -(chrono::Local::now().naive_utc()
+                    .signed_duration_since(p.create_datetime + Duration::days(60))
+                    .num_days()),
+                prod: p,
+            }
+        }).collect();
+        
         Ok(r)
 
     }
 
-    pub fn get_deleted_products(u_id: i32, conn: &PgConnection) -> Result<Vec<Product>,Error> {
-
-        use crate::schema::products::dsl::*;
-
-        let r = products
-            .filter(seller_id.eq(u_id))
-            .filter(status.eq("deleted"))
-            .get_results::<Product>(conn)?;
-        Ok(r)
-
-    }
 }
 
 
@@ -426,7 +490,7 @@ pub struct NewProduct {
     pub phone_number: String,
 }
 
-#[derive(Serialize, Deserialize, Queryable, Clone)]
+#[derive(Serialize, Deserialize, Queryable, Clone, Debug)]
 pub struct Brand {
     pub id: i32,
     pub name: String,
