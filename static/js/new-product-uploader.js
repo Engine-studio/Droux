@@ -152,9 +152,50 @@ function MakeMini(){
     popUp.classList.remove('pop-up_visible');
 }
 
+document.getElementsByClassName('ad-form__submit-button')[0].addEventListener('click', Continue);
+function Continue() {
+    let sex = document.getElementsByClassName('filters__sector_sex')[0];
+    let category = document.getElementsByClassName('filters__sector_type')[0];
+    let subcategory = document.getElementsByClassName('filters__sector_sex')[0];
+    let brand = document.getElementsByClassName('filters__sector_brand')[0];
+    let size = document.getElementsByClassName('filters__sector_size')[0];
+    let name = document.getElementsByClassName('ad-form__field-div_name')[0];
+    let description = document.getElementsByClassName('ad-form__field-div_description')[0];
+    let state = document.getElementsByClassName('ad-form__state')[0];
+    let price = document.getElementsByClassName('ad-form__price')[0];
+    let number = document.getElementsByClassName('ad-form__num')[0];
+    let email = document.getElementsByClassName('ad-form__email')[0];
 
+    console.log("afsdaffas");
+    let body = new FormData();
+    body.append('type_id', sex.querySelector('input:checked').value);
+    body.append('category_id', category.querySelector('input:checked').value);
+    body.append('sub_category_id', subcategory.querySelector('input:checked').value);
+    body.append('brand_id', brand.querySelector('input:checked').value);
+    body.append('size_id', size.querySelector('input:checked').value);
+    body.append('state_id', state.querySelector('input:checked').value);
+    body.append('title', name.querySelector('input').value);
+    body.append('descr', description.querySelector('textarea').value);
+    body.append('price', price.querySelector('input').value);
+    body.append('phone_number', number.querySelector('input').value);
+    body.append('location', email.querySelector('input').value);
+    body.append('seller_id', 1);
 
+    let photos = document.getElementsByClassName('uploader__frame-img');
+    console.log(photos);
+    n = 0
+    for (let i = 0; i < 10; i++) {
+        let id = 'photo' + String(i + 1);
+        if (photos[i] !=null) {
+            let blob = fetch(photos[i].src).then(r => r.blob())
+            body.append(id, blob);
+        }
+    }
 
-
+    let postAd = new XMLHttpRequest();
+    postAd.open('POST', '/product/create', true);
+    postAd.send(body);
+    return false;
+}
 
 
