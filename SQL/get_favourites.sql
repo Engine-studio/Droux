@@ -30,7 +30,6 @@ FROM products AS pr
     JOIN users AS u2 
     	ON u2.id = pr.seller_id 
 WHERE
-	pr.status = 'published'
+	pr.status = 'published' AND fv.id IS NOT NULL
 ORDER BY 
-    vws.count DESC NULLS LAST
-LIMIT $2;
+    pr.title

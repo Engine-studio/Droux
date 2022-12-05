@@ -17,6 +17,9 @@ use rocket_multipart_form_data::{
 use crate::users::CommonUser;
 use crate::routes::Either;
 use crate::routes::get_base_context;
+use crate::models::product::ProductCard;
+use crate::db::product::reviewed_by_user;
+use crate::models::product::NewProduct;
 
 
 #[get("/product/<id>")]
@@ -26,16 +29,29 @@ pub fn get_product_by_id(id: i32, user: CommonUser, conn: crate::db::Conn) -> Te
     use crate::models::product::ProductContext;
     use crate::db::product::{get_brand_list,get_brand_name,get_product_data};
 
+    crate::db::product::increment_product_views(id, &conn);
+    crate::db::product::increment_product_today_views(id, &conn);
+    let opt_id = match user.clone() {
+        CommonUser::Logged(u) => Some(u.id),
+        CommonUser::NotLogged() => None,
+    };
     let mut ctx = get_base_context(user.clone(), &conn);
     ctx.insert("brands", &get_brand_list(&conn));
+    ctx.insert("most_viewed_products", &ProductCard::get_recently_added(8, opt_id.clone(), &conn));
 
     let product = get_product_data(id, &conn);
+
     let user_id = match user {
         CommonUser::Logged(u) => Some(u.id),
         CommonUser::NotLogged() => None,
     };
     let (product,seller) = ProductContext::get_by_id(id, user_id, &conn);
     ctx.insert("product", &product);
+    if seller.rate_count == 0 {
+        ctx.insert("rating_floored", &0);
+    } else {
+        ctx.insert("rating_floored", &(seller.rate_summ / seller.rate_count)); 
+    }
     ctx.insert("seller", &seller);
     Template::render("product/main", &ctx)
 }
@@ -61,10 +77,10 @@ pub fn product_create_get(user: CommonUser, conn: crate::db::Conn) -> Either {
     }
 }
 
-#[post("/product/create",data="<form>")]
-pub fn product_create(content_type: &ContentType, form: Data, user: CommonUser, conn: crate::db::Conn) -> Redirect {
-   
+pub fn parse_multiform_product(content_type: &ContentType, form: Data) -> NewProduct {
+    
     use crate::routes;
+
     let options = MultipartFormDataOptions::with_multipart_form_data_fields(
         vec! [
             //.content_type_by_string(Some(mime::IMAGE_STAR)).unwrap()
@@ -98,6 +114,7 @@ pub fn product_create(content_type: &ContentType, form: Data, user: CommonUser, 
             MultipartFormDataField::text("seller_id"),
             MultipartFormDataField::text("brand_id"),
             MultipartFormDataField::text("type_id"),
+            MultipartFormDataField::text("phone_number"),
         ]
     );
 
@@ -124,6 +141,7 @@ pub fn product_create(content_type: &ContentType, form: Data, user: CommonUser, 
     let seller_id = multipart_form_data.texts.remove("seller_id");
     let brand_id = multipart_form_data.texts.remove("brand_id");
     let type_id = multipart_form_data.texts.remove("type_id");
+    let phone_number = multipart_form_data.texts.remove("phone_number");
 
 
     fn unpack(data: Option<std::vec::Vec<routes::product::rocket_multipart_form_data::TextField>>) -> String {
@@ -148,6 +166,8 @@ pub fn product_create(content_type: &ContentType, form: Data, user: CommonUser, 
     let title   = unpack(title);
     let descr   = unpack(descr);
     let location= unpack(location);
+    let phone_number= unpack(phone_number);
+
 
     let price       : i32 = unpack(price).trim().parse().expect("error parsing price");
     let seller_id   : i32 = unpack(seller_id).trim().parse().expect("error parsing seller_id");
@@ -172,10 +192,8 @@ pub fn product_create(content_type: &ContentType, form: Data, user: CommonUser, 
     unpack_photo(&photo9, &mut photos_array, &title,9);
     unpack_photo(&photo10, &mut photos_array, &title,10);
     
-    
-    use crate::db::product::create_product;
     use crate::models::product::NewProduct;
-    let new_product = NewProduct {
+    NewProduct {
         sub_category_id: sub_category_id,
         title: title,
         descr: descr,
@@ -187,8 +205,17 @@ pub fn product_create(content_type: &ContentType, form: Data, user: CommonUser, 
         pictures: photos_array,
         type_id: type_id,
         size_id: size_id,
-    };
-    create_product(new_product, &conn);
+        phone_number: phone_number,
+    }
+}
+
+#[post("/product/create",data="<form>")]
+pub fn product_create(content_type: &ContentType, form: Data, user: CommonUser, conn: crate::db::Conn) -> Redirect {
+   
+    use crate::db::product::create_product;
+
+    let p = parse_multiform_product(content_type, form);
+    create_product(p, &conn);
     Redirect::to("/")
 }
 
@@ -197,12 +224,14 @@ pub fn product_create(content_type: &ContentType, form: Data, user: CommonUser, 
 pub struct StarsForm {
     toid: i32,
     strs: i16,
+    comm: String,
+    feedb: String,
 }
 #[post("/users/rating",data="<form>")]
 pub fn rating_add(form: Form<StarsForm>, user: CommonUser, conn: crate::db::Conn) -> Redirect {
     use crate::models::product::ProductRating;
     if let CommonUser::Logged(user) = user {
-        ProductRating::set_rating(user.id,form.toid,form.strs, &conn);
+        ProductRating::set_rating(user.id,form.toid,form.strs, form.comm.clone(), form.feedb.clone(), &conn);
     }
     Redirect::to("/")
 }

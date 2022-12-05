@@ -20,6 +20,18 @@ pub fn get_brand_list(conn: &PgConnection) -> Vec<Brand> {
         .expect("error loading brands table")
 }
 
+pub fn reviewed_by_user(user_id: i32, seller: i32, conn: &PgConnection) -> bool {
+    
+    use crate::schema::rating::dsl::*;
+
+    rating 
+        .filter(voter_id.eq(user_id))
+        .filter(seller_id.eq(seller))
+        .count()
+        .execute(conn)
+        .expect("Err getting rate reviewed_by_user") > 0
+}
+
 pub fn get_product_data(pr_id: i32, conn: &PgConnection) -> Product {
     products
         .filter(id.eq(pr_id))
@@ -33,6 +45,38 @@ pub fn get_brand_name(cid: i32, conn: &PgConnection) -> Brand {
         .filter(id.eq(cid))
         .get_result::<Brand>(conn)
         .expect("no such brand found by id")
+}
+
+pub fn increment_product_views(pr_id: i32, conn: &PgConnection) {
+    diesel::update(products)
+        .filter(id.eq(pr_id))
+        .set(total_views.eq(total_views+1))
+        .execute(conn)
+        .expect("error incr views");
+}
+
+pub fn increment_product_today_views(pr_id: i32, conn: &PgConnection) {
+
+    use crate::schema::views::dsl::*;
+    use crate::models::product::ProductTodayViews;
+
+    let r = views
+        .filter(product_id.eq(pr_id))
+        .get_results::<ProductTodayViews>(conn)
+        .expect("err incrementing today product");
+    
+    if r.len() > 0 {
+        diesel::update(views)
+            .filter(product_id.eq(pr_id))
+            .set(count.eq(count+1))
+            .execute(conn)
+            .expect("error incr views");
+    } else {
+        diesel::insert_into(views)
+            .values(&(product_id.eq(pr_id),count.eq(1)))
+            .execute(conn)
+            .expect("error incr views");
+    }
 }
 
 pub fn get_category_list(conn: &PgConnection) -> Vec<AllSubCategories> {

@@ -25,8 +25,8 @@ pub fn index(user: CommonUser, conn: crate::db::Conn) -> Template {
         CommonUser::Logged(u) => Some(u.id),
         CommonUser::NotLogged() => None,
     };
-    ctx.insert("most_viewed_products",&ProductCard::get_most_viewed(opt_id.clone(), &conn));
-    ctx.insert("new_products", &ProductCard::get_recently_added(opt_id.clone(), &conn));
+    ctx.insert("most_viewed_products",&ProductCard::get_most_viewed(20,opt_id.clone(), &conn));
+    ctx.insert("new_products", &ProductCard::get_recently_added(20,opt_id.clone(), &conn));
     ctx.insert("popular_seller_products", &ProductCard::get_by_seller_popular_products(opt_id.clone(), &conn));
     Template::render("index", &ctx )
 }
@@ -36,9 +36,12 @@ pub enum UserGuard {
     Logged(Users),
     NotLogged,
 }
-pub fn get_required_context(data: UserGuard, _conn: &PgConnection) -> Context {
+pub fn get_required_context(data: UserGuard, conn: &PgConnection) -> Context {
     let mut ctx = Context::new();
     use UserGuard::*;
+    ctx.insert("login_fail",&false);
+    ctx.insert("register_fail",&false);
+    ctx.insert("links", &crate::models::admin::Links::get_social_media_links(conn));
     match data {
         Logged(usr) => {
             ctx.insert("is_logged", &true);

@@ -25,12 +25,10 @@ FROM products AS pr
 		ON fv.product_id = pr.id AND $1 IS NOT NULL AND fv.user_id = $1
 	JOIN sizes AS sz 
 		ON sz.id = pr.size_id
-    LEFT JOIN views AS vws 
-        ON vws.product_id = pr.id
     JOIN users AS u2 
-    	ON u2.id = pr.seller_id 
+    	ON u2.id = pr.seller_id
 WHERE
 	pr.status = 'published'
 ORDER BY 
-    vws.count DESC NULLS LAST
-LIMIT $2;
+    pr.create_datetime DESC
+LIMIT 8;

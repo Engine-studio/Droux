@@ -18,19 +18,17 @@ FROM products AS pr
 	LEFT JOIN promotions AS prom 
 		ON prom.product_id = pr.id 
 	JOIN sub_categories AS sc 
-		ON sc.id = pr.id
+		ON sc.id = pr.sub_category_id 
 	JOIN categories AS c2 
 		ON c2.id = sc.category_id
 	LEFT JOIN favourites AS fv 
-		ON fv.product_id = pr.id AND fv.user_id = $1
+		ON fv.product_id = pr.id AND $1 IS NOT NULL AND fv.user_id = $1
 	JOIN sizes AS sz 
 		ON sz.id = pr.size_id
-    LEFT JOIN deleted_posts AS delp
-        ON delp.post_id = pr.id
     JOIN users AS u2 
     	ON u2.id = pr.seller_id
 WHERE
-	delp.post_id IS NULL
+	pr.status = 'published'
 ORDER BY 
-    pr.create_datetime
-LIMIT 20;
+    pr.create_datetime DESC
+LIMIT $2;
