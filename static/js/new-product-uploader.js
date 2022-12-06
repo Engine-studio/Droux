@@ -200,10 +200,12 @@ async function PostProduct() {
 
     let postAd = new XMLHttpRequest();
     postAd.open('POST', '/product/create', true);
-    await postAd.send(body);
-    let redirectRoute = "/product/promotion/create/" + String(postAd.response);
-    console.log(redirectRoute);
-    window.location.replace(redirectRoute);
+    postAd.send(body);
+    postAd.onreadystatechange = function() {
+        let redirectRoute = "/product/promotion/create/" + String(postAd.response);
+        console.log(redirectRoute);
+        window.location.replace(redirectRoute);
+    }
     return false;
 }
 
@@ -246,17 +248,19 @@ async function EditProduct() {
         }
     }
     
-    prodId = document.getElementById('product_id').value;
+    let prodId = document.getElementById('product_id').value;
     let route = "/admin/product/change/" + prodId
     console.log(route);
     let postAd = new XMLHttpRequest();
     let page = document.getElementById('page_num');
     postAd.open('POST', route, true);
     postAd.responseType = 'text';
-    await postAd.send(body);
-    let redirectRoute = "/admin/product/" + page.value
-    console.log(redirectRoute);
-    window.location.replace(redirectRoute);
+    postAd.send(body);
+    postAd.onreadystatechange = function() {
+        let redirectRoute = "/admin/product";
+        console.log(redirectRoute);
+        window.location.replace(redirectRoute);
+    }
     return false;
 }
 
