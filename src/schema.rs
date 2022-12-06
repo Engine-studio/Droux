@@ -85,6 +85,7 @@ table! {
         create_datetime -> Timestamp,
         phone_number -> Varchar,
         status -> Varchar,
+        bought_with -> Nullable<Int4>,
     }
 }
 
@@ -123,6 +124,7 @@ table! {
         comment -> Varchar,
         feedback_type -> Varchar,
         create_datetime -> Timestamp,
+        product_id -> Int4,
     }
 }
 
@@ -177,6 +179,7 @@ table! {
         rate_summ -> Int8,
         rate_count -> Int8,
         register_data -> Timestamp,
+        is_banned -> Bool,
     }
 }
 
