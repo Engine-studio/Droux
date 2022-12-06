@@ -6,6 +6,7 @@ pub mod db;
 pub mod auth;
 pub mod routes;
 pub mod users;
+pub mod crm;
 
 #[macro_use]
 extern crate rocket;
@@ -49,6 +50,33 @@ impl From<DieselError> for Error {
     }
 }
 
+impl From<serde_json::Error> for Error {
+    fn from(error: serde_json::Error) -> Error {
+        Error {
+            status: Status::InternalServerError,
+            message: error.to_string(),
+        }
+    }
+}
+
+impl From<reqwest::Error> for Error {
+    fn from(error: reqwest::Error) -> Error {
+        Error {
+            status: Status::InternalServerError,
+            message: error.to_string(),
+        }
+    }
+}
+
+impl From<std::str::Utf8Error> for Error {
+    fn from(error: std::str::Utf8Error) -> Error {
+        Error {
+            status: Status::InternalServerError,
+            message: error.to_string(),
+        }
+    }
+}
+
 use rocket_contrib::templates::{Template,tera::*};
 use serde::Serialize;
 use rocket::http::{Cookie, Cookies};
@@ -84,6 +112,25 @@ pub fn app() -> rocket::Rocket {
             routes::users::get_users_products,
             routes::users::get_users_reviews,
             routes::users::get_users_favourites,
+            routes::users::get_user_products_profile,
+            routes::users::get_user_reviews_profile,
+            routes::product::favourites_add,
+            routes::product::favourites_delete,
+            routes::admin::admin_users,
+            routes::admin::admin_users_ban,
+            routes::admin::admin_links,
+            routes::admin::admin_links_change,
+            routes::admin::admin_priveleges,
+            routes::admin::admin_priveleges_add, 
+            routes::admin::admin_priveleges_delete,
+            routes::users::post_user_reviews_add,
+            routes::product::get_promotions,
+            routes::product::get_promotions_final,
+            routes::product::post_promotions,
+            routes::product::check_pay,
+            routes::product::get_order_final,
+            routes::product::get_order,
+            routes::product::post_order,
             ])
         .attach(Template::fairing())
         .attach(db::Conn::fairing())

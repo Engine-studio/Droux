@@ -4,10 +4,11 @@
     <link rel="stylesheet" href="../../static/css/ad.css">
     <link rel="stylesheet" href="../../static/css/common.css">
     <link rel="stylesheet" href="../../static/css/profile.css">
+    <link rel="stylesheet" href="../../static/css/product.css">
     <meta charset="UTF-8">
     <title>Title</title>
 </head>
-
+<body>
 <main class="container profile">
     <div class="profile__card card">
         <div class="card__top">
@@ -39,7 +40,7 @@
             Скоро здесь будут подписки или настройки профиля
         </div>
         <div class="card__review-button-div card__button-div">
-            <a href="" class="card__review-button button card__button">Оставить отзыв</a>
+            <button href="" class="card__review-button button card__button">Оставить отзыв</button>
         </div>
         <div class="card__subscribe-button-div card__button-div">
             <a href="" class="card__subscribe-button button card__button">Подписаться</a>
@@ -50,146 +51,225 @@
         </div>
     </div>
     <div class="profile__content content">
-        <div class="my-adss content__border">
-            <div class="content__top">
-                <h2 class="content__header my-ads__header">Мои объявления</h2>
-                <div class="my-ads__buttons">
-                    <input type="radio" name="ads-types" id="active" class="content__radio" checked>
-                    <label for="active" class="content__label button">Активные</label>
-                    <input type="radio" name="ads-types" id="sold" class="content__radio">
-                    <label for="sold" class="content__label button">Проданные</label>
-                </div>
-            </div>
-            <div class="profile-ads content__ads content__ads_active content__ads_visible">
-                <div class="ad">
-                    <div class="ad__img-container"> <!--Рамка для одной фотографии-->
-                        <div class="ad__arrow ad__arrow_left">
-                            <img src="../../static/assets/arrow-left.svg" alt="Стрелка просмотра предыдущего фото">
-                        </div>
-                        <div class="ad__all-images"> <!--Все фото в линию-->
-                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">
-                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">
-                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">
-                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">
-                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">
-                        </div>
-                        <div class="ad__arrow ad__arrow_right">
-                            <img src="../../static/assets/arrow-right.svg" alt="Стрелка просмотра слюдующего фото">
-                        </div>
-                    </div>
-                    <div class="ad__info">
-                        <div class="ad__top">
-                            <div class="ad__title-and-price">
-                                <h2 class="ad__title">Жвачка по рублю</h2>
-                                <span class="ad__price">5 руб.</span>
+<!--        <div class="my-adss content__border">-->
+<!--            <div class="content__top">-->
+<!--                <h2 class="content__header my-ads__header">Мои объявления</h2>-->
+<!--                <div class="my-ads__buttons">-->
+<!--                    <input type="radio" name="ads-types" id="active" class="content__radio" checked>-->
+<!--                    <label for="active" class="content__label button">Активные</label>-->
+<!--                    <input type="radio" name="ads-types" id="sold" class="content__radio">-->
+<!--                    <label for="sold" class="content__label button">Проданные</label>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <div class="profile-ads content__ads content__ads_active content__ads_visible">-->
+<!--                <div class="ad">-->
+<!--                    <div class="ad__img-container"> &lt;!&ndash;Рамка для одной фотографии&ndash;&gt;-->
+<!--                        <div class="ad__arrow ad__arrow_left">-->
+<!--                            <img src="../../static/assets/arrow-left.svg" alt="Стрелка просмотра предыдущего фото">-->
+<!--                        </div>-->
+<!--                        <div class="ad__all-images"> &lt;!&ndash;Все фото в линию&ndash;&gt;-->
+<!--                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">-->
+<!--                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">-->
+<!--                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">-->
+<!--                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">-->
+<!--                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">-->
+<!--                        </div>-->
+<!--                        <div class="ad__arrow ad__arrow_right">-->
+<!--                            <img src="../../static/assets/arrow-right.svg" alt="Стрелка просмотра слюдующего фото">-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    <div class="ad__info">-->
+<!--                        <div class="ad__top">-->
+<!--                            <div class="ad__title-and-price">-->
+<!--                                <h2 class="ad__title">Жвачка по рублю</h2>-->
+<!--                                <span class="ad__price">5 руб.</span>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--                <div class="ad">-->
+<!--                    <div class="ad__img-container"> &lt;!&ndash;Рамка для одной фотографии&ndash;&gt;-->
+<!--                        <div class="ad__arrow ad__arrow_left">-->
+<!--                            <img src="../../static/assets/arrow-left.svg" alt="Стрелка просмотра предыдущего фото">-->
+<!--                        </div>-->
+<!--                        <div class="ad__all-images"> &lt;!&ndash;Все фото в линию&ndash;&gt;-->
+<!--                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">-->
+<!--                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">-->
+<!--                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">-->
+<!--                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">-->
+<!--                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">-->
+<!--                        </div>-->
+<!--                        <div class="ad__arrow ad__arrow_right">-->
+<!--                            <img src="../../static/assets/arrow-right.svg" alt="Стрелка просмотра слюдующего фото">-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    <div class="ad__info">-->
+<!--                        <div class="ad__top">-->
+<!--                            <div class="ad__title-and-price">-->
+<!--                                <h2 class="ad__title">Жвачка по рублю</h2>-->
+<!--                                <span class="ad__price">5 руб.</span>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <div class="profile-ads content__ads content__ads_sold">-->
+<!--                <div class="ad">-->
+<!--                    <div class="ad__img-container"> &lt;!&ndash;Рамка для одной фотографии&ndash;&gt;-->
+<!--                        <div class="ad__arrow ad__arrow_left">-->
+<!--                            <img src="../../static/assets/arrow-left.svg" alt="Стрелка просмотра предыдущего фото">-->
+<!--                        </div>-->
+<!--                        <div class="ad__all-images"> &lt;!&ndash;Все фото в линию&ndash;&gt;-->
+<!--                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">-->
+<!--                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">-->
+<!--                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">-->
+<!--                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">-->
+<!--                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">-->
+<!--                        </div>-->
+<!--                        <div class="ad__arrow ad__arrow_right">-->
+<!--                            <img src="../../static/assets/arrow-right.svg" alt="Стрелка просмотра слюдующего фото">-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    <div class="ad__info">-->
+<!--                        <div class="ad__top">-->
+<!--                            <div class="ad__title-and-price">-->
+<!--                                <h2 class="ad__title">Жвачка по два рубля</h2>-->
+<!--                                <span class="ad__price">5 руб.</span>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--                <div class="ad">-->
+<!--                    <div class="ad__img-container"> &lt;!&ndash;Рамка для одной фотографии&ndash;&gt;-->
+<!--                        <div class="ad__arrow ad__arrow_left">-->
+<!--                            <img src="../../static/assets/arrow-left.svg" alt="Стрелка просмотра предыдущего фото">-->
+<!--                        </div>-->
+<!--                        <div class="ad__all-images"> &lt;!&ndash;Все фото в линию&ndash;&gt;-->
+<!--                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">-->
+<!--                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">-->
+<!--                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">-->
+<!--                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">-->
+<!--                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">-->
+<!--                        </div>-->
+<!--                        <div class="ad__arrow ad__arrow_right">-->
+<!--                            <img src="../../static/assets/arrow-right.svg" alt="Стрелка просмотра слюдующего фото">-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    <div class="ad__info">-->
+<!--                        <div class="ad__top">-->
+<!--                            <div class="ad__title-and-price">-->
+<!--                                <h2 class="ad__title">Жвачка по два рубля</h2>-->
+<!--                                <span class="ad__price">5 руб.</span>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--                <div class="ad">-->
+<!--                    <div class="ad__img-container"> &lt;!&ndash;Рамка для одной фотографии&ndash;&gt;-->
+<!--                        <div class="ad__arrow ad__arrow_left">-->
+<!--                            <img src="../../static/assets/arrow-left.svg" alt="Стрелка просмотра предыдущего фото">-->
+<!--                        </div>-->
+<!--                        <div class="ad__all-images"> &lt;!&ndash;Все фото в линию&ndash;&gt;-->
+<!--                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">-->
+<!--                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">-->
+<!--                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">-->
+<!--                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">-->
+<!--                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">-->
+<!--                        </div>-->
+<!--                        <div class="ad__arrow ad__arrow_right">-->
+<!--                            <img src="../../static/assets/arrow-right.svg" alt="Стрелка просмотра слюдующего фото">-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    <div class="ad__info">-->
+<!--                        <div class="ad__top">-->
+<!--                            <div class="ad__title-and-price">-->
+<!--                                <h2 class="ad__title">Жвачка по два рубля</h2>-->
+<!--                                <span class="ad__price">5 руб.</span>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+        <div class="my-reviews content__border">
+                            <div class="content__top">
+                                <h2 class="content__header my-reviews__header">Отзывы</h2>
+                            </div>
+                            <div class="content__reviews">
+                                <div class="content__review review">
+                                    <div class="review__top">
+                                        <div class="review__author-photo">
+                                            <img src="../../static/assets/female.jpg" alt="">
+                                        </div>
+                                        <div class="review__info">
+                                            <div class="review__author-name-and-date">
+                                                <span class="review__author-name">Продавец говна</span>
+                                                <span class="review__date">08.08.2020</span>
+                                            </div>
+                                            <div class="review__rating-and-product">
+                                                <div class="review__stars">
+                                                    <img src="../../static/assets/star-filled.svg" alt="">
+                                                    <img src="../../static/assets/star-filled.svg" alt="">
+                                                    <img src="../../static/assets/star-filled.svg" alt="">
+                                                    <img src="../../static/assets/star-filled.svg" alt="">
+                                                    <img src="../../static/assets/star-filled.svg" alt="">
+                                                </div>
+                                                <span class="review__product">Сделка состоялась по "Говно"</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="review__text">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Autem blanditiis cupiditate ea fugiat magnam provident quam quasi quo rerum voluptates. Esse ipsum itaque laudantium maxime non nulla velit vero voluptas.</div>
+                                </div>
+                                <div class="content__review review">
+                                    <div class="review__top">
+                                        <div class="review__author-photo">
+                                            <img src="../../static/assets/female.jpg" alt="">
+                                        </div>
+                                        <div class="review__info">
+                                            <div class="review__author-name-and-date">
+                                                <span class="review__author-name">Продавец говна</span>
+                                                <span class="review__date">08.08.2020</span>
+                                            </div>
+                                            <div class="review__rating-and-product">
+                                                <div class="review__stars">
+                                                    <img src="../../static/assets/star-filled.svg" alt="">
+                                                    <img src="../../static/assets/star-filled.svg" alt="">
+                                                    <img src="../../static/assets/star-filled.svg" alt="">
+                                                    <img src="../../static/assets/star-filled.svg" alt="">
+                                                    <img src="../../static/assets/star-filled.svg" alt="">
+                                                </div>
+                                                <span class="review__product">Сделка состоялась по "Говно"</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="review__text">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Autem blanditiis cupiditate ea fugiat magnam provident quam quasi quo rerum voluptates. Esse ipsum itaque laudantium maxime non nulla velit vero voluptas.</div>
+                                </div>
+                                <div class="content__review review">
+                                    <div class="review__top">
+                                        <div class="review__author-photo">
+                                            <img src="../../static/assets/female.jpg" alt="">
+                                        </div>
+                                        <div class="review__info">
+                                            <div class="review__author-name-and-date">
+                                                <span class="review__author-name">Продавец говна</span>
+                                                <span class="review__date">08.08.2020</span>
+                                            </div>
+                                            <div class="review__rating-and-product">
+                                                <div class="review__stars">
+                                                    <img src="../../static/assets/star-filled.svg" alt="">
+                                                    <img src="../../static/assets/star-filled.svg" alt="">
+                                                    <img src="../../static/assets/star-filled.svg" alt="">
+                                                    <img src="../../static/assets/star-filled.svg" alt="">
+                                                    <img src="../../static/assets/star-filled.svg" alt="">
+                                                </div>
+                                                <span class="review__product">Сделка состоялась по "Говно"</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="review__text">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Autem blanditiis cupiditate ea fugiat magnam provident quam quasi quo rerum voluptates. Esse ipsum itaque laudantium maxime non nulla velit vero voluptas.</div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-                <div class="ad">
-                    <div class="ad__img-container"> <!--Рамка для одной фотографии-->
-                        <div class="ad__arrow ad__arrow_left">
-                            <img src="../../static/assets/arrow-left.svg" alt="Стрелка просмотра предыдущего фото">
-                        </div>
-                        <div class="ad__all-images"> <!--Все фото в линию-->
-                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">
-                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">
-                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">
-                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">
-                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">
-                        </div>
-                        <div class="ad__arrow ad__arrow_right">
-                            <img src="../../static/assets/arrow-right.svg" alt="Стрелка просмотра слюдующего фото">
-                        </div>
-                    </div>
-                    <div class="ad__info">
-                        <div class="ad__top">
-                            <div class="ad__title-and-price">
-                                <h2 class="ad__title">Жвачка по рублю</h2>
-                                <span class="ad__price">5 руб.</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="profile-ads content__ads content__ads_sold">
-                <div class="ad">
-                    <div class="ad__img-container"> <!--Рамка для одной фотографии-->
-                        <div class="ad__arrow ad__arrow_left">
-                            <img src="../../static/assets/arrow-left.svg" alt="Стрелка просмотра предыдущего фото">
-                        </div>
-                        <div class="ad__all-images"> <!--Все фото в линию-->
-                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">
-                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">
-                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">
-                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">
-                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">
-                        </div>
-                        <div class="ad__arrow ad__arrow_right">
-                            <img src="../../static/assets/arrow-right.svg" alt="Стрелка просмотра слюдующего фото">
-                        </div>
-                    </div>
-                    <div class="ad__info">
-                        <div class="ad__top">
-                            <div class="ad__title-and-price">
-                                <h2 class="ad__title">Жвачка по два рубля</h2>
-                                <span class="ad__price">5 руб.</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="ad">
-                    <div class="ad__img-container"> <!--Рамка для одной фотографии-->
-                        <div class="ad__arrow ad__arrow_left">
-                            <img src="../../static/assets/arrow-left.svg" alt="Стрелка просмотра предыдущего фото">
-                        </div>
-                        <div class="ad__all-images"> <!--Все фото в линию-->
-                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">
-                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">
-                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">
-                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">
-                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">
-                        </div>
-                        <div class="ad__arrow ad__arrow_right">
-                            <img src="../../static/assets/arrow-right.svg" alt="Стрелка просмотра слюдующего фото">
-                        </div>
-                    </div>
-                    <div class="ad__info">
-                        <div class="ad__top">
-                            <div class="ad__title-and-price">
-                                <h2 class="ad__title">Жвачка по два рубля</h2>
-                                <span class="ad__price">5 руб.</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="ad">
-                    <div class="ad__img-container"> <!--Рамка для одной фотографии-->
-                        <div class="ad__arrow ad__arrow_left">
-                            <img src="../../static/assets/arrow-left.svg" alt="Стрелка просмотра предыдущего фото">
-                        </div>
-                        <div class="ad__all-images"> <!--Все фото в линию-->
-                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">
-                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">
-                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">
-                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">
-                            <img src="../../static/assets/male.jpg" alt="" class="ad__img">
-                        </div>
-                        <div class="ad__arrow ad__arrow_right">
-                            <img src="../../static/assets/arrow-right.svg" alt="Стрелка просмотра слюдующего фото">
-                        </div>
-                    </div>
-                    <div class="ad__info">
-                        <div class="ad__top">
-                            <div class="ad__title-and-price">
-                                <h2 class="ad__title">Жвачка по два рубля</h2>
-                                <span class="ad__price">5 руб.</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 </main>
 <footer class="footer">
@@ -228,8 +308,49 @@
         </div>
     </div>
 </footer>
+<div class="review__layout review">
+    <form class="review__body">
+        <h2>Отзыв о продавце</h2>
+        <label for="chooseprod">Объявление</label>
+        <select name="product" id="chooseprod">
+            <option selected disabled></option>
+            <option value="prodID">Пиписьки</option>
+            <option value="prodID">Огромные черные тщлены</option>
+            <option value="prodID">Игральные карты "Эротика"</option>
+            <option value="prodID">Девственность</option>
+        </select>
+        <label for="result">Объявление</label>
+        <select name="product" id="result">
+            <option selected disabled></option>
+            <option value="failed">Не удалось договориться с продавцом</option>
+            <option value="pidor">Сделка сорвалась (Товар не был получен или не соответствовал описанию)</option>
+            <option value="chetko">Сделка состоялась</option>
+        </select>
+        <span class="review__rate">Поставьте оценку</span>
+        <div class="product__rating">
+            <input type="radio" name="product-rating" value="5" id="product-rating_5">
+            <label for="product-rating_5"></label>
+
+            <input type="radio" name="product-rating" value="4" id="product-rating_4">
+            <label for="product-rating_4"></label>
+
+            <input type="radio" name="product-rating" value="3" id="product-rating_3">
+            <label for="product-rating_3"></label>
+
+            <input type="radio" name="product-rating" value="2" id="product-rating_2">
+            <label for="product-rating_2"></label>
+
+            <input type="radio" name="product-rating" value="1" id="product-rating_1">
+            <label for="product-rating_1"></label>
+        </div>
+        <label for="review-text">Напишите свои впечатления от сделки</label>
+        <textarea id="review-text"></textarea>
+        <input type="submit" value="Отправить" class="button">
+    </form>
+</div>
     <script src="../../static/js/ad-carousel.js"></script>
     <script src="../../static/js/profile-ads-category.js"></script>
     <script src="../../static/js/chat.js"></script>
+    <script src="../../static/js/review.js"></script>
 </body>
 </html>

@@ -1,0 +1,197 @@
+{% if is_logged == true %}
+    <div class="header__user-actions-layout">
+        <div class="container">
+            <div class="header__user-actions">
+                <a href="/users/products">Мои объявления</a>
+                <a href="/users/favourites">Избранное</a>
+                <a href="">Мои покупки</a>
+                <a href="/users/products">Мои продажи</a>
+                <a href="">Настройки</a>
+                <a href="/logout">Выйти</a>
+            </div>
+        </div>
+    </div>
+{% endif %}
+<div class="dropdown__layout"></div>
+<header class="header">
+    <div class="services">
+        <div class="container services__container">
+            <div class="services__item">
+                <img src="/static/assets/safety.svg" alt="Иконка безопасной сделки" class="services__icon">
+                <span>Безопасная сделка</span>
+            </div>
+            <div class="services__item">
+                <img src="/static/assets/delivery.svg" alt="Иконка доставки" class="services__icon">
+                <span>Бесплатная доставка</span>
+            </div>
+            <div class="services__item">
+                <img src="/static/assets/scan.svg" alt="Иконка экспертизы" class="services__icon">
+                <span>Экспертиза на подлинность</span>
+            </div>
+        </div>
+    </div>
+    <div class="header-base__line">
+        <div class="container header__base">
+            <form class="header__search" method="POST" action="/filters">
+                <div class="search__field">
+                    <label for="header-search">
+                        <img src="/static/assets/search.svg" alt="Иконка поиска" class="search__icon">
+                    </label>
+                    <input class="search__input" type="search" id="header-search" name="search_string" placeholder="Поиск по товарам">
+                    <input type="hidden" name="limit" value="12">
+                    <input type="hidden" name="offset" value="0">
+                </div>
+                <input class="search__button button" type="submit" value="Найти">
+            </form>
+            <div class="header__logo">
+                <a href="/">
+                    <img src="/static/assets/droux-logo.svg" alt="Логотип Droux">
+                </a>
+            </div>
+            <div class="header__buttons">
+                <a href="/product/create" class="button sell__button">Продать</a>
+                <a href="/chat">
+                    <img src="/static/assets/chat.svg" alt="Иконка чата" class="buttons__icon">
+                </a>
+                <a href="/users/favourites">
+                    <img src="/static/assets/favourite.svg" alt="Иконка избранного" class="buttons__icon">
+                </a>
+                {% if is_logged == false%}
+                    <span id="auth-button">Войти</span>
+                {% else %}
+                <img src="/static/profile_pictures/{{ user.picture_path }}" alt="" class="header__user-photo">
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="header-nav__line">
+        <nav class="header__nav">
+            <a href="" class="dropdown__button_to-hide">ВЫБОР DROUX</a>
+            <a href="" class="dropdown__button_to-hide">НОВИНКИ</a>
+            <a href="" class="dropdown__button">БРЕНДЫ</a>
+            {% for cat in header_categories %}
+                <a href="/filters?limit=12&offset=0&category_id={{ cat.category_id }}" class="dropdown__button">{{ cat.category_name | upper }}</a>
+            {% endfor %}
+        </nav>
+    </div>
+    <div class="authorizer authorizer__background 
+        {% if login_fail or register_fail %}
+        authorizer_visible
+        {% endif %}
+        ">
+        <div class="authorizer__window">
+            <div class="authorizer__choice">
+                <input type="radio" name="auth" id="sign-in" 
+                    {% if register_fail == false %}
+                    checked
+                    {% endif %}>
+                <label for="sign-in">Войти</label>
+                <input type="radio" name="auth" id="sign-up" 
+                    {% if register_fail %}
+                    checked
+                    {% endif %}>
+                <label for="sign-up">Создать аккаунт</label>
+            </div>
+            <form class="authorizer__form_sign-in authorizer__form 
+                {% if register_fail == false %}
+                    authorizer__form_visible 
+                {% endif %}" action="/login" method="POST">
+                <label for="sign-in__login">Логин</label>
+                <input type="text" id="sign-in__login" name="login" {% if login_fail %}class="authorizer__input_failed"{% endif %}>
+                <label for="sign-in__password">Пароль</label>
+                <input type="password" id="sign-in__password" name="pass" {% if login_fail %}class="authorizer__input_failed"{% endif %}>
+                <div class="sign-in__remember-and-forget">
+                    <input type="checkbox" id="remember-me">
+                    <label for="remember-me" class="authorizer__checkbox-label">Запомнить меня</label>
+                    <a>Забыли пароль?</a>
+                </div>
+                <input type="submit" class="button sign-in__button" value="Войти">
+                <label for="sign-up" class="sign-in__not-a-label">Не зарегистрированы на Droux? Создайте аккаунт</label>
+            </form>
+            <form class="authorizer__form_sign-up authorizer__form 
+                {% if register_fail %}
+                    authorizer__form_visible 
+                {% endif %}" action="/register" method="POST">
+                <label for="sign-up__login">Логин</label>
+                <input type="text" id="sign-up__login" name="username">
+                <label for="sign-up__email">Адрес электронной почты</label>
+                <input type="text" id="sign-up__email" name="email">
+                <label for="sign-up__password">Пароль</label>
+                <input type="password" id="sign-up__password" name="pass">
+                <label for="sign-up__repeat-password">Повторите пароль</label>
+                <input type="password" id="sign-up__repeat-password">
+                <input type="checkbox" id="accept-rules">
+                <label for="accept-rules" class="authorizer__checkbox-label" id="sign-up__checkbox"><span>Я принимаю условия <a href="">Пользовательского соглашения</a></span></label>
+                <input type="submit" class="button sign-up__button" value="Зарегистрироваться" disabled>
+            </form>
+        </div>
+    </div>
+    <div class="header__dropdown dropdown">
+        <div class="dropdown__border-for-brands dropdown__border">
+            <h2 class="dropdown__header">Наш выбор</h2>
+            <div class="dropdown__content container dropdown__content_brands">
+                <div class="dropdown__letter">
+                    <a href="" class="dropdown__link">Adidas</a>
+                    <a href="" class="dropdown__link">Alexander McQueen</a>
+                    <a href="" class="dropdown__link">Alexander Wang</a>
+                </div>
+                <div class="dropdown__letter">
+                    <a href="" class="dropdown__link">Balenciaga</a>
+                    <a href="" class="dropdown__link">Bape</a>
+                    <a href="" class="dropdown__link">Burberry</a>
+                </div>
+                <div class="dropdown__letter">
+                    <a href="" class="dropdown__link">Cartier</a>
+                    <a href="" class="dropdown__link">Comme De Garçons</a>
+                </div>
+                <div class="dropdown__letter dropdown__letter_last">
+                    <a href="" class="dropdown__link">Dior</a>
+                    <a href="" class="dropdown__link">Dolce & Gabbana</a>
+                </div>
+                <div class="dropdown__letter">
+                    <a href="" class="dropdown__link">Fear of God</a>
+                </div>
+                <div class="dropdown__letter">
+                    <a href="" class="dropdown__link">Givenci</a>
+                    <a href="" class="dropdown__link">Gucci</a>
+                </div>
+                <div class="dropdown__letter">
+                    <a href="" class="dropdown__link">Lanvin</a>
+                    <a href="" class="dropdown__link">Louis Vuitton</a>
+                </div>
+                <div class="dropdown__letter">
+                    <a href="" class="dropdown__link">Max Mara</a>
+                </div>
+                <div class="dropdown__letter">
+                    <a href="" class="dropdown__link">Nike</a>
+                </div>
+                <div class="dropdown__letter dropdown__letter_last">
+                    <a href="" class="dropdown__link">Off-white</a>
+                </div>
+                <div class="dropdown__letter">
+                    <a href="" class="dropdown__link">RAF Simons</a>
+                    <a href="" class="dropdown__link">Rolex</a>
+                </div>
+                <div class="dropdown__letter">
+                    <a href="" class="dropdown__link">Saint Laurent</a>
+                    <a href="" class="dropdown__link">Stone Island</a>
+                    <a href="" class="dropdown__link">Supreme</a>
+                </div>
+                <div class="dropdown__letter">
+                    <a href="" class="dropdown__link">Valentino</a>
+                    <a href="" class="dropdown__link">Versache</a>
+                </div>
+                <a href="" class="dropdown__all-brands">Все бренды</a>
+            </div>
+        </div>
+        {% for cat in header_categories %}
+            <div class="dropdown__border">
+                <div class="dropdown__content container">
+                    {% for subcat in cat.sub_categories %}
+                        <a href="/filters?limit=12&offset=0&subcategory_id={{ subcat.id }}" class="dropdown__link">{{ subcat.name }}</a>
+                    {% endfor %}
+                </div>             
+            </div>
+        {% endfor %}
+    </div>
+</header>
