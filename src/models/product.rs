@@ -112,17 +112,17 @@ pub struct ProductCard {
 
 #[derive(FromForm,Clone,Serialize,Deserialize,Queryable,Debug)]
 pub struct SearchForm {
-    search_string: Option<String>,
-    prod_size_id: Option<i32>,
-    product_state_id: Option<i32>,
-    limit: i32,
-    offset: i32,
-    subcategory_id: Option<i32>,
-    category_id: Option<i32>,
-    prod_brand_id: Option<i32>,
-    prod_type_id: Option<i32>,
-    order_by: Option<String>,
-    user_id: Option<i32>,
+    pub search_string: Option<String>,
+    pub prod_size_id: Option<i32>,
+    pub product_state_id: Option<i32>,
+    pub limit: i32,
+    pub offset: i32,
+    pub subcategory_id: Option<i32>,
+    pub category_id: Option<i32>,
+    pub prod_brand_id: Option<i32>,
+    pub prod_type_id: Option<i32>,
+    pub order_by: Option<String>,
+    pub user_id: Option<i32>,
 }
 
 impl ProductCard {
@@ -223,12 +223,6 @@ pub struct ProductCategories {
 }
 
 #[derive(Serialize, Deserialize, Queryable, Clone)]
-pub struct DeletedProducts {
-    id: i32,
-    post_id: i32,
-}
-
-#[derive(Serialize, Deserialize, Queryable, Clone)]
 pub struct FavouriteProducts {
     id: i32,
     user_id: i32,
@@ -302,6 +296,37 @@ pub struct ProductType {
 }
 
 #[derive(Serialize, Deserialize, Queryable, Clone)]
+pub struct Links {
+    id: i32,
+    name: String,
+    link: String,
+    icon: String,
+}
+
+impl Links {
+    pub fn get_links(conn: &PgConnection) -> Result<Vec<Links>,Error> {
+
+        use crate::schema::social_links::dsl::*;
+
+        Ok(social_links
+            .get_results::<Links>(conn)?)
+
+    }
+    pub fn change_link_by_id(l_id: i32, new_link: String, conn: &PgConnection) -> Result<(),Error> {
+
+        use crate::schema::social_links::dsl::*;
+
+        diesel::update(social_links)
+            .filter(id.eq(l_id))
+            .set(link.eq(new_link))
+            .execute(conn)?;
+
+        Ok(())
+
+    }
+}
+
+#[derive(Serialize, Deserialize, Queryable, Clone)]
 pub struct ProductSize {
     id: i32,
     name: String,
@@ -316,6 +341,22 @@ pub struct ProductPromotions {
     top_by_name: bool,
     is_pre_order: bool,
     prod_bought_date: chrono::NaiveDateTime,
+}
+
+impl ProductPromotions {
+    pub fn get_pre_order(p_id: i32, conn: &PgConnection) -> Result<bool,Error> {
+
+        use crate::schema::promotions::dsl::*;
+
+        let p = promotions
+            .filter(product_id.eq(p_id))
+            .get_result::<ProductPromotions>(conn);
+        match p {
+            Err(_) => Ok(false),
+            Ok(i) => Ok(i.is_pre_order),
+        }
+
+    }
 }
 
 #[derive(Insertable,AsChangeset,Debug,Clone)]
@@ -351,16 +392,27 @@ pub struct ProductRating {
 }
 
 impl ProductRating {
-    pub fn set_rating(fid: i32, tid: i32, stars_count: i16, com: String, feedb: String, conn: &PgConnection) {
+    pub fn set_rating(fid: i32, tid: i32, p_id: i32, stars_count: i16, com: String, feedb: String, conn: &PgConnection) {
 
         use crate::schema::rating::dsl::*;
-
+        if fid == tid {
+            return;
+        }
+        if diesel::select(diesel::dsl::exists(rating
+            .filter(voter_id.eq(fid))
+            .filter(seller_id.eq(tid))))
+            .get_result(conn)
+            .expect("err")
+             {
+                return;
+            }
         diesel::insert_into(rating)
             .values((
                 voter_id.eq(fid),
                 seller_id.eq(tid),
                 stars.eq(stars_count),
                 comment.eq(com),
+                product_id.eq(p_id),
                 feedback_type.eq(feedb)))
             .execute(conn)
             .expect("Error adding rating to database");
@@ -410,6 +462,7 @@ pub struct Product {
     pub create_datetime: NaiveDateTime,
     pub phone_number: String,
     pub status: String,
+    pub bought_with: Option<i32>,
 }
 
 use rocket_contrib::templates::tera::Context;
@@ -438,6 +491,32 @@ impl Product {
 
     }
 
+    pub fn get_for_profile(u_id: i32, conn: &PgConnection) -> Result<Vec<(i32,String)>,Error> {
+
+        use crate::schema::{
+            products,
+            users,
+        };
+
+        Ok(products::table
+            .filter(products::seller_id.eq(u_id))
+            .filter(products::status.eq("published").or(products::status.eq("sold")))
+            .inner_join(users::table.on(products::seller_id.eq(users::id)))
+            .select((products::id,products::title))
+            .get_results::<(i32,String)>(conn)?)
+
+    }
+
+    pub fn set_status(p_id: i32, stat: String, conn: &PgConnection) -> Result<(),Error> {
+
+        use crate::schema::products::dsl::*;
+
+        diesel::update(products.filter(id.eq(p_id)))
+            .set(status.eq(stat))
+            .execute(conn)?;
+        Ok(())
+    }
+
     pub fn get_products_by_status_and_user(stat: String, u_id: i32, conn: &PgConnection) -> Result<Vec<ProductWithFav>,Error> {
 
         use crate::schema::products::dsl::*;
@@ -445,7 +524,7 @@ impl Product {
 
         use chrono::{NaiveDate, NaiveDateTime, Duration};
 
-let dt: NaiveDateTime = NaiveDate::from_ymd(2016, 7, 8).and_hms(9, 10, 11);
+        let dt: NaiveDateTime = NaiveDate::from_ymd(2016, 7, 8).and_hms(9, 10, 11);
 
         let r = products
             .filter(seller_id.eq(u_id))
@@ -612,5 +691,38 @@ impl ProductAdmin {
             .execute(conn)
             .expect("error setting published");
             
+    }
+}
+
+use crate::routes::product::PrivForm;
+
+impl PrivForm {
+
+    pub fn save(&self, conn: &PgConnection) -> Result<(),Error> {
+        use crate::schema::promotions::dsl::*;
+        if self.all == false {
+            diesel::insert_into(promotions)
+                .values(
+                    &(
+                        product_id.eq(self.product_id),
+                        is_marked.eq(false),
+                        top_by_cat.eq(self.top_cat),
+                        top_by_name.eq(self.top_name),
+                        is_pre_prder.eq(self.pre_order),
+                    ))
+                .execute(conn)?;
+        } else {
+            diesel::insert_into(promotions)
+            .values(
+                &(
+                    product_id.eq(self.product_id),
+                    is_marked.eq(true),
+                    top_by_cat.eq(true),
+                    top_by_name.eq(true),
+                    is_pre_prder.eq(true),
+                ))
+            .execute(conn)?;
+        }
+        Ok(())
     }
 }

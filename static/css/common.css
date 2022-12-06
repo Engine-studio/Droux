@@ -143,6 +143,19 @@ input[type=checkbox] + label {
     color: black;
     cursor: pointer;
     font-size: 13px;
+    transition: transform 0.2s ease;
+}
+
+.button:hover {
+    transform: scale(1.1);
+}
+
+.button[disabled]:hover {
+    transform: none;
+}
+
+.button[disabled] {
+    background-color: #707070;
 }
 
 
@@ -369,7 +382,7 @@ input[type=checkbox] + label {
     border: 1px solid black;
 }
 
-.authorizer__form input[type=submit] {
+.sign-up__button, .sign-in__button {
     background-color: black;
     color: white;
     font-size: 18px;
@@ -544,4 +557,48 @@ input[type=checkbox] + label {
     height: 1px;
 }
 
+@media (max-width: 576px) {
+    .container {
+        width: 100%;
+    }
+    html {
+        width: 100%;
+    }
+    body {
+        width: 100%;
+    }
+    .header {
+        width: 100%;
+    }
+    .services {
+        width: 100%;
+        min-height: 40px;
+        justify-content: space-between;
+    }
+    .services__item {
+        font-size: 12px;
+        width: 33%;
+        margin: 0;
+    }
+    .services__item img {
+        width: 18px;
+        height: 18px;
+        margin-right: 5px;
+    }
 
+}
+
+
+.sign-up__bottom-text {
+    font-size: 9px;
+    color: #747474;
+    margin-bottom: -10px;
+}
+
+.authorizer__window .authorizer__form .authorizer__input_failed {
+    border: 1px solid red;
+}
+
+.authorizer__window .authorizer__form .authorizer__input_failed + .sign-up__bottom-text {
+    color: red;
+}
