@@ -189,7 +189,6 @@ async function PostProduct() {
 
     let photos = document.getElementsByClassName('uploader__frame-img');
     console.log(photos);
-    n = 0
     for (let i = 0; i < 10; i++) {
         let id = 'photo' + String(i + 1);
         if (photos[i] !=null) {
@@ -201,7 +200,10 @@ async function PostProduct() {
 
     let postAd = new XMLHttpRequest();
     postAd.open('POST', '/product/create', true);
-    postAd.send(body).then(window.location.replace(""));
+    await postAd.send(body);
+    let redirectRoute = "/product/promotion/create/" + String(postAd.response);
+    console.log(redirectRoute);
+    window.location.replace(redirectRoute);
     return false;
 }
 
@@ -235,7 +237,6 @@ async function EditProduct() {
 
     let photos = document.getElementsByClassName('uploader__frame-img');
     console.log(photos);
-    n = 0
     for (let i = 0; i < 10; i++) {
         let id = 'photo' + String(i + 1);
         if (photos[i] !=null) {
@@ -249,8 +250,13 @@ async function EditProduct() {
     let route = "/admin/product/change/" + prodId
     console.log(route);
     let postAd = new XMLHttpRequest();
+    let page = document.getElementById('page_num');
     postAd.open('POST', route, true);
-    postAd.send(body).then(window.location.replace(""));
+    postAd.responseType = 'text';
+    await postAd.send(body);
+    let redirectRoute = "/admin/product/" + page.value
+    console.log(redirectRoute);
+    window.location.replace(redirectRoute);
     return false;
 }
 
