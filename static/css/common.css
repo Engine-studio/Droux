@@ -557,7 +557,7 @@ input[type=checkbox] + label {
     height: 1px;
 }
 
-@media (max-width: 576px) {
+@media (max-width: 1200px) {
     .container {
         width: 100%;
     }
@@ -585,6 +585,18 @@ input[type=checkbox] + label {
         height: 18px;
         margin-right: 5px;
     }
+    .header__base {
+        justify-content: space-between;
+    }
+
+    .header__nav a, .header__nav a:hover {
+        padding: 0;
+    }
+
+    .header__nav::-webkit-scrollbar {
+        width: 0;
+    }
+
 
 }
 
@@ -601,4 +613,168 @@ input[type=checkbox] + label {
 
 .authorizer__window .authorizer__form .authorizer__input_failed + .sign-up__bottom-text {
     color: red;
+}
+
+
+
+
+@media (max-width: 1200px) {
+    
+    .container {
+        padding: 0 17px;
+        width: 100%;
+    }
+    
+    .services {
+        height: 40px;
+        background-color: #E0E0E0;
+        position: relative;
+        z-index: 7;
+        display: flex;
+    }
+    
+    .services > * {
+        margin: auto;
+        white-space: nowrap;
+    }
+    
+    .header__search {
+        max-width: 16px;
+        overflow: hidden;
+    }
+
+    .search__field {
+        border-bottom: 0;
+    }
+    
+    .header__search__mobile__button {
+        width: 20px;
+        position: relative;
+    }
+    
+    .header__search__mobile__button > .search__icon {
+        height: 18px;
+    }
+    
+    .header__search__mobile__button__checkbox {
+        position: absolute;
+        display: none;
+    }
+    
+    .header__login__button__mobile {
+        font-size: 14px;
+    }
+
+    .header__buttons {
+        width: unset;
+    }
+    
+    .header__buttons > *:not(span){
+       display: none;
+    }
+
+    .header__buttons a {
+        position: fixed;
+        display: flex;
+        width: 170px;
+        margin: 0 auto;
+        bottom: 15px;
+        height: 30px;
+        right: calc(50% - 85px);
+    }
+    
+    .footer {
+        height: 576px;
+    }
+    
+    .footer__column > a {
+        font-size: 14px;
+    }
+    
+    .footer__column__fourth {
+        display: flex;
+    }
+    
+    .header-nav__line {
+        padding: 0 17px;
+        height: 66px;
+    }
+    
+    .header__nav {
+        overflow-x: scroll;
+        overflow-y: hidden;
+        height: unset;
+    }
+    
+    .header__nav a:hover {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 7px;
+    }
+    
+    .header__nav > a {
+        margin-left: 20px;
+        white-space: nowrap;
+        padding-bottom: 7px;
+    }
+    
+    .header__nav a:first-child {
+        margin-left: 0;
+    }
+    
+    .footer {
+        margin-top: 71px;
+    }
+    
+    .footer__container {
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+    
+    .footer__column {
+        height: 200px;
+        width: 150px;
+        display: flex;
+        margin: 0;
+    }
+    
+    .footer__column_fourth {
+        flex-basis: 100%;
+    }
+    
+    .flex__break {
+        flex-basis: 100%;  
+        height: 0;
+    }
+    
+    .footer__link_46, .footer__column > a {
+        margin-bottom: 50px;
+    }
+
+    .footer__column:not(.footer__column__fourth){
+        width: 33%;
+    }
+    .services__item div {
+        white-space: pre-wrap;
+        width: 70px;
+    }
+}
+
+@media only screen and (max-width: 510px) {
+    .services__item {
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 430px) {
+    .show-all .show-all__header {
+        font-size: 14px;
+    }
+    .footer .footer__column > a{
+        font-size: 10px;
+    }
+    .show-all__button {
+        justify-content: flex-start;
+        width: unset;
+    }
 }

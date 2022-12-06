@@ -32,7 +32,7 @@
     </div>
     <div class="header-base__line">
         <div class="container header__base">
-            <form class="header__search" method="POST" action="/filters">
+            <form class="header__search" method="GET" action="/filters">
                 <div class="search__field">
                     <label for="header-search">
                         <img src="/static/assets/search.svg" alt="Иконка поиска" class="search__icon">
@@ -41,7 +41,7 @@
                     <input type="hidden" name="limit" value="12">
                     <input type="hidden" name="offset" value="0">
                 </div>
-                <input class="search__button button" type="submit" value="Найти">
+                <button class="search__button button" value="Найти">Найти</button>
             </form>
             <div class="header__logo">
                 <a href="/">
@@ -49,11 +49,23 @@
                 </a>
             </div>
             <div class="header__buttons">
-                <a href="/product/create" class="button sell__button">Продать</a>
-                <a href="/chat">
+                <a {% if is_logged == true %}
+                        href="/product/create"
+                    {% else %}
+                        onclick="AuthToggle()"
+                    {% endif %} class="button sell__button">Продать</a>
+                <a {% if is_logged == true %}
+                        href="/chat"
+                    {% else %}
+                        onclick="AuthToggle()"
+                    {% endif %}>
                     <img src="/static/assets/chat.svg" alt="Иконка чата" class="buttons__icon">
                 </a>
-                <a href="/users/favourites">
+                <a {% if is_logged == true %}
+                        href="/users/favourites"
+                    {% else %}
+                        onclick="AuthToggle()"
+                    {% endif %}>
                     <img src="/static/assets/favourite.svg" alt="Иконка избранного" class="buttons__icon">
                 </a>
                 {% if is_logged == false%}
