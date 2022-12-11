@@ -29,6 +29,23 @@ if (address.includes("prod_type_id=1")) {
     body = "limit=12&prod_type_id=2";
 }
 
+let categories = document.querySelectorAll('input[name=\"category_id\"]');
+for (let i = 0; i < categories.length; i++) {
+    if (address.includes("&category_id=" + (i + 1))) {
+        filtersActive = true;
+        document.getElementById('ad_cat' + (i + 1)).checked = true;
+        body = "limit=12&category_id=" + (i + 1);
+    }
+}
+
+let subcategories = document.querySelectorAll('input[name=\"sub_category_id\"]');
+for (let i = 0; i < subcategories.length; i++) {
+    if (address.includes("subcategory_id=" + (i + 1))) {
+        filtersActive = true;
+        document.getElementById('ad_sub_cat' + (i + 1)).checked = true;
+        body = "limit=12&subcategory_id=" + (i + 1);
+    }
+}
 
 
 function checkAndAdd() {
@@ -169,7 +186,7 @@ function jsonToAds(response) {
             "                    <span class=\"ad__size\">" + resp[i].size_name + "</span>\n" +
             "                </div>\n" +
             "                <div class=\"ad__category\">" + resp[i].category_name + "</div>\n" +
-            "                <div class=\"ad__price\">" + resp[i].price + "</div>"
+            "                <div class=\"ad__price\">" + resp[i].price + "₽</div>"
         let imageDiv = newAd.querySelector('.ad__all-images');
         for (let j = 0; j < resp[i].pictures.length; j++) {
             let productPhoto = document.createElement('a');
