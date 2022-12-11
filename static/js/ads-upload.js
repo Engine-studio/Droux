@@ -62,9 +62,7 @@ function NewSearch() {
 function useFilters() {
     portions = 0;
     body = 'limit=12';
-    if (headerSearchField.value != '') {
-        body += '&search_string=' + headerSearchField.value;
-    }
+    body += '&search_string=' + headerSearchField.value;
     if (filters[0].querySelector('input:checked') != null) {
         body += '&prod_type_id=' + filters[0].querySelector('input:checked').value;
     }
@@ -83,6 +81,14 @@ function useFilters() {
     if (filters[5].querySelector('input:checked') != null) {
         body += '&product_state_id=' + filters[5].querySelector('input:checked').value;
     }
+    if (document.documentElement.clientWidth >= 1200) {
+        body += '&order_by=' + sort.querySelector('input:checked').value;
+    } else {
+        body += '&order_by=' + mobileSort.querySelector('input:checked').value;
+    }
+    body += '&offset=' + (12 * portions);
+    console.log(body);
+
     filtersActive = true;
     let request = new XMLHttpRequest();
     request.open("POST", '/filters/lots', true);
@@ -93,7 +99,7 @@ function useFilters() {
     searchResults.className = 'search-results';
     let main = document.querySelector('main');
     main.append(searchResults);
-    request.send(encodeURI(body + '&offset=' + (12 * portions)));
+    request.send(encodeURI(body));
     portions += 1;
     request.onreadystatechange = function() {
         jsonToAds(request.response);
@@ -191,4 +197,5 @@ function jsonToAds(response) {
         searchResults.append(newAd);
     }
     checkAds();
+    listenFav();
 }
