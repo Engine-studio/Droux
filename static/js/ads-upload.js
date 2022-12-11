@@ -8,7 +8,7 @@ let body;
 
 function checkAndAdd() {
     let currentBottom = document.documentElement.getBoundingClientRect().bottom;
-    if (currentBottom < document.documentElement.clientHeight + 450) {
+    if ((currentBottom < document.documentElement.clientHeight + 450) && (!stopItFlag)){
         let request = new XMLHttpRequest();
         request.open("POST", '/filters/lots', true);
         request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -28,7 +28,7 @@ function checkAndAdd() {
 
 let filters = document.getElementsByClassName('filters__sector-options');
 for (let i = 0; i < filters.length; i++) {
-    let options = filters[i].querySelectorAll('input[type=radio]');
+    let options = filters[i].querySelectorAll('input[type="radio"]');
     for (let j = 0; j < options.length; j++) {
         options[j].addEventListener('change', NewSearch);
     }
@@ -59,10 +59,12 @@ function NewSearch() {
     timeout = setTimeout(useFilters, 1000);
 }
 
+let stopItFlag;
 function useFilters() {
+    filtersActive = true;
+    stopItFlag = true;
     portions = 0;
     body = 'limit=12';
-    body += '&search_string=' + headerSearchField.value;
     if (filters[0].querySelector('input:checked') != null) {
         body += '&prod_type_id=' + filters[0].querySelector('input:checked').value;
     }
@@ -86,66 +88,29 @@ function useFilters() {
     } else {
         body += '&order_by=' + mobileSort.querySelector('input:checked').value;
     }
+    if ((headerSearchField.value != "") || (body.length < 30)) { //ПЕРВОЕ, ЧТО МОЖЕТ СЛОМАТЬСЯ
+        body += '&search_string=' + headerSearchField.value;
+    }
     body += '&offset=' + (12 * portions);
-    console.log(body);
-
-    filtersActive = true;
-    let request = new XMLHttpRequest();
-    request.open("POST", '/filters/lots', true);
-    request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     let res = document.querySelector('.search-results');
     res.parentNode.removeChild(res);
     searchResults = document.createElement('div');
     searchResults.className = 'search-results';
     let main = document.querySelector('main');
     main.append(searchResults);
-    request.send(encodeURI(body));
     portions += 1;
+    console.log(body);
+    let request = new XMLHttpRequest();
+    request.open("POST", '/filters/lots', true);
+    request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    request.send(body);
+    console.log(body);
     request.onreadystatechange = function() {
         jsonToAds(request.response);
-        changeSize();
     }
     timeout = 0;
+
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 function jsonToAds(response) {
@@ -199,4 +164,5 @@ function jsonToAds(response) {
     checkAds();
     listenFav();
     changeSize();
+    stopItFlag = false;
 }
