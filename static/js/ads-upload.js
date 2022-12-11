@@ -7,6 +7,27 @@ let filtersActive = false;
 let body;
 let stopItFlag = false;
 let address = window.location.href;
+if (address.includes("order_by=Date")) {
+    filtersActive = true;
+    document.getElementById('date').checked = true;
+    document.getElementById('-m-date').checked = true;
+    body = "search_string=&limit=12&order_by=Date";
+} else if (address.includes("order_by=Views")) {
+    filtersActive = true;
+    document.getElementById('popularity').checked = true;
+    document.getElementById('-m-popularity').checked = true;
+    body = "search_string=&limit=12&order_by=Views";
+}
+
+if (address.includes("prod_type_id=1")) {
+    filtersActive = true;
+    document.getElementById('ad_types1').checked = true;
+    body = "limit=12&prod_type_id=1";
+} else if (address.includes("prod_type_id=2")) {
+    filtersActive = true;
+    document.getElementById('ad_types2').checked = true;
+    body = "limit=12&prod_type_id=2";
+}
 
 
 
@@ -19,6 +40,7 @@ function checkAndAdd() {
         request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         if (filtersActive) {
             request.send(body + '&offset=' + (12 * portions));
+            console.log(body + '&offset=' + (12 * portions));
         } else {
             body = 'search_string=&limit=12' + '&offset=' + (12 * portions);
             console.log(body);
@@ -96,7 +118,6 @@ function useFilters() {
     if ((headerSearchField.value != "") || (body.length < 30)) { //ПЕРВОЕ, ЧТО МОЖЕТ СЛОМАТЬСЯ
         body += '&search_string=' + headerSearchField.value;
     }
-    body += '&offset=' + (12 * portions);
     let res = document.querySelector('.search-results');
     res.parentNode.removeChild(res);
     searchResults = document.createElement('div');
@@ -107,7 +128,7 @@ function useFilters() {
     let request = new XMLHttpRequest();
     request.open("POST", '/filters/lots', true);
     request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-    request.send(body);
+    request.send(body  + '&offset=' + (12 * portions));
     console.log(body);
     request.onload = function() {
         console.log(request.response)
