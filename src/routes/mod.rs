@@ -5,6 +5,8 @@ pub mod filters;
 pub mod users;
 pub mod chat;
 pub mod static_pages;
+pub mod subs;
+pub mod news;
 
 use rocket_contrib::templates::{Template,tera::*};
 use rocket::response::Redirect;

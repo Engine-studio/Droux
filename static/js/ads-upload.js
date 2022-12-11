@@ -5,21 +5,67 @@ let timer = setInterval(checkAndAdd,3000);
 let portions = 1;
 let filtersActive = false;
 let body;
+let stopItFlag = false;
+let address = window.location.href;
+if (address.includes("order_by=Date")) {
+    filtersActive = true;
+    document.getElementById('date').checked = true;
+    document.getElementById('-m-date').checked = true;
+    body = "search_string=&limit=12&order_by=Date";
+} else if (address.includes("order_by=Views")) {
+    filtersActive = true;
+    document.getElementById('popularity').checked = true;
+    document.getElementById('-m-popularity').checked = true;
+    body = "search_string=&limit=12&order_by=Views";
+}
+
+if (address.includes("prod_type_id=1")) {
+    filtersActive = true;
+    document.getElementById('ad_types1').checked = true;
+    body = "limit=12&prod_type_id=1";
+} else if (address.includes("prod_type_id=2")) {
+    filtersActive = true;
+    document.getElementById('ad_types2').checked = true;
+    body = "limit=12&prod_type_id=2";
+}
+
+let categories = document.querySelectorAll('input[name=\"category_id\"]');
+for (let i = 0; i < categories.length; i++) {
+    if (address.includes("&category_id=" + (i + 1))) {
+        filtersActive = true;
+        document.getElementById('ad_cat' + (i + 1)).checked = true;
+        body = "limit=12&category_id=" + (i + 1);
+    }
+}
+
+let subcategories = document.querySelectorAll('input[name=\"sub_category_id\"]');
+for (let i = 0; i < subcategories.length; i++) {
+    if (address.includes("subcategory_id=" + (i + 1))) {
+        filtersActive = true;
+        document.getElementById('ad_sub_cat' + (i + 1)).checked = true;
+        body = "limit=12&subcategory_id=" + (i + 1);
+    }
+}
+
 
 function checkAndAdd() {
     let currentBottom = document.documentElement.getBoundingClientRect().bottom;
     if ((currentBottom < document.documentElement.clientHeight + 450) && (!stopItFlag)){
+        stopItFlag = true;
         let request = new XMLHttpRequest();
         request.open("POST", '/filters/lots', true);
         request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         if (filtersActive) {
             request.send(body + '&offset=' + (12 * portions));
+            console.log(body + '&offset=' + (12 * portions));
         } else {
             body = 'search_string=&limit=12' + '&offset=' + (12 * portions);
+            console.log(body);
             request.send(body)
         }
         portions+=1;
-        request.onreadystatechange = function() {
+        request.onload = function() {
+            console.log(request.response)
             jsonToAds(request.response);
             changeSize();
         }
@@ -58,8 +104,6 @@ function NewSearch() {
     timer = setInterval(checkAndAdd,3000);
     timeout = setTimeout(useFilters, 1000);
 }
-
-let stopItFlag;
 function useFilters() {
     filtersActive = true;
     stopItFlag = true;
@@ -91,23 +135,22 @@ function useFilters() {
     if ((headerSearchField.value != "") || (body.length < 30)) { //ПЕРВОЕ, ЧТО МОЖЕТ СЛОМАТЬСЯ
         body += '&search_string=' + headerSearchField.value;
     }
-    body += '&offset=' + (12 * portions);
     let res = document.querySelector('.search-results');
     res.parentNode.removeChild(res);
     searchResults = document.createElement('div');
     searchResults.className = 'search-results';
     let main = document.querySelector('main');
     main.append(searchResults);
-    portions += 1;
-    console.log(body);
     let request = new XMLHttpRequest();
     request.open("POST", '/filters/lots', true);
     request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-    request.send(body);
+    request.send(body  + '&offset=' + (12 * portions));
     console.log(body);
-    request.onreadystatechange = function() {
+    request.onload = function() {
+        console.log(request.response)
         jsonToAds(request.response);
     }
+    portions += 1;
     timeout = 0;
 
 }
@@ -115,10 +158,11 @@ function useFilters() {
 
 function jsonToAds(response) {
     let resp = JSON.parse(response);
-    if (resp.length === 0) {
+    if (resp.length < 12) {
         clearInterval(timer);
     }
     for (let i = 0; i < resp.length; i++) {
+        console.log(i);
         let newAd = document.createElement('div');
         let adLink = '/product/' + resp[i].id
         newAd.className = 'ad';
@@ -142,7 +186,7 @@ function jsonToAds(response) {
             "                    <span class=\"ad__size\">" + resp[i].size_name + "</span>\n" +
             "                </div>\n" +
             "                <div class=\"ad__category\">" + resp[i].category_name + "</div>\n" +
-            "                <div class=\"ad__price\">" + resp[i].price + "</div>"
+            "                <div class=\"ad__price\">" + resp[i].price + "₽</div>"
         let imageDiv = newAd.querySelector('.ad__all-images');
         for (let j = 0; j < resp[i].pictures.length; j++) {
             let productPhoto = document.createElement('a');
