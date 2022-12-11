@@ -56,6 +56,8 @@ table! {
         body -> Text,
         picture -> Varchar,
         creation_datetime -> Timestamp,
+        subtitle -> Varchar,
+        banner -> Varchar,
     }
 }
 
@@ -104,6 +106,14 @@ table! {
 }
 
 table! {
+    promos (id) {
+        id -> Int4,
+        promo -> Varchar,
+        sale -> Int4,
+    }
+}
+
+table! {
     promotions (id) {
         id -> Int4,
         product_id -> Int4,
@@ -112,6 +122,7 @@ table! {
         top_by_name -> Bool,
         is_pre_prder -> Bool,
         prod_bought_date -> Timestamp,
+        in_news -> Bool,
     }
 }
 
@@ -125,6 +136,14 @@ table! {
         feedback_type -> Varchar,
         create_datetime -> Timestamp,
         product_id -> Int4,
+    }
+}
+
+table! {
+    rescue_issues (id) {
+        id -> Int4,
+        contact -> Varchar,
+        issue -> Varchar,
     }
 }
 
@@ -219,8 +238,10 @@ allow_tables_to_appear_in_same_query!(
     products,
     product_state,
     product_type,
+    promos,
     promotions,
     rating,
+    rescue_issues,
     selled_posts,
     sizes,
     social_links,

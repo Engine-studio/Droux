@@ -6,7 +6,7 @@
                 <img src="/static/profile_pictures/{{ad.profile_picture}}" alt="">
             </div>
             <div class="ad__author-info">
-                <a href="/profile/users/{{ ad.seller_id }}/product">
+                <a href="/profile/users/{{ ad.seller_id }}/profile">
                     <span class="ad__author-name">{{ ad.seller_uname }}</span>
                 </a>
                 <div class="ad__author-rating">
@@ -27,7 +27,9 @@
             </div>
             <div class="ad__all-images"> <!--Все фото в линию-->
                 {% for pic_url in ad.pictures %}
+                <a href="/product/{{ ad.id }}">
                     <img src="/{{pic_url}}" alt="" class="ad__img">
+                </a>
                 {% endfor %}
             </div>
             <div class="ad__arrow ad__arrow_right">
@@ -35,11 +37,11 @@
             </div>
             {% if is_logged %}
                 <div class="ad__favourite-icon">
-                    <img src="/static/assets/favourite.svg" alt="Иконка избранного" class="ad__favourite-icon-img_empty                     
+                    <img src="/static/assets/favourite.svg" alt="Иконка избранного" class="ad__favourite-icon-img_empty                 
                         {% if ad.is_in_favourites == false %}
                             fav-icon_active
                         {% endif %}">
-                    <img src="/static/assets/favourite-filled.svg" class="ad__favourite-icon-img_filled 
+                    <img src="/static/assets/favourite-filled.svg" class="ad__favourite-icon-img_filled
                         {% if ad.is_in_favourites %}
                             fav-icon_active
                         {% endif %}">
@@ -51,6 +53,6 @@
             <span class="ad__size">{{ ad.size_name }}</span>
         </div>
         <div class="ad__category">{{ ad.category_name }}</div>
-        <div class="ad__price">{{ ad.price }}</div>
+        <div class="ad__price">{{ ad.price }}₽</div>
     </div>   
 {% endmacro instance %}

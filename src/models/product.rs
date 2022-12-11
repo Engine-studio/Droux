@@ -7,8 +7,6 @@ use diesel::prelude::*;
 use serde::{Serialize, Deserialize};
 use crate::schema::{
     products,
-    categories,
-    sub_categories,
     favourites,
     promotions,
     rating,
@@ -66,8 +64,6 @@ pub struct ProductContext {
 
 impl ProductContext {
     pub fn get_by_id(pr_id: i32,my_id: Option<i32>, conn: &PgConnection)-> (ProductContext,Users) {
-
-        use crate::models::users::Users;
         
         let product = diesel::sql_query(include_str!("../../SQL/product.sql"))
             .bind::<Integer,_>(pr_id)
@@ -125,7 +121,26 @@ pub struct SearchForm {
     pub user_id: Option<i32>,
 }
 
+#[derive(Serialize,Clone,Debug,QueryableByName)]
+pub struct ProductNews {
+    #[sql_type="Integer"]
+    pub id: i32,
+    #[sql_type="Text"]
+    pub title: String,
+    #[sql_type="Text"]
+    pub descr: String,
+    #[sql_type="Text"]
+    pub pictures: String,
+}
+
 impl ProductCard {
+
+    pub fn in_news(user_id: Option<i32>, conn: &PgConnection) -> Result<Vec<ProductNews>,Error> {
+        let r = diesel::sql_query(include_str!("../../SQL/get_in_news.sql"))
+        .bind::<Nullable<Integer>, _>(user_id)
+        .get_results::<ProductNews>(conn)?;
+        Ok(r)
+    }
 
     pub fn get_favourites(user_id: i32, conn: &PgConnection) -> Vec<ProductCard> {
         
@@ -138,11 +153,6 @@ impl ProductCard {
 
 
     pub fn get_most_viewed(limit: i32, user_id: Option<i32>, conn: &PgConnection) -> Vec<ProductCard> {
-        
-        use diesel::sql_types::{
-            Nullable,
-            Integer,
-        };
 
         diesel::sql_query(include_str!("../../SQL/select_top_views.sql"))
             .bind::<Nullable<Integer>, _>(user_id)
@@ -153,11 +163,6 @@ impl ProductCard {
     }
 
     pub fn get_recently_added(limit: i32, user_id: Option<i32>, conn: &PgConnection) -> Vec<ProductCard> {
-       
-        use diesel::sql_types::{
-            Nullable,
-            Integer,
-        };
 
         diesel::sql_query(include_str!("../../SQL/select_recently_added.sql"))
             .bind::<Nullable<Integer>, _>(user_id)
@@ -170,11 +175,6 @@ impl ProductCard {
 
     pub fn get_by_seller_popular_products(user_id: Option<i32>, conn: &PgConnection) -> Vec<ProductCard> {
        
-        use diesel::sql_types::{
-            Nullable,
-            Integer,
-        };
-       
         diesel::sql_query(include_str!("../../SQL/select_popular_by_seller.sql"))
             .bind::<Nullable<Integer>, _>(user_id)
             .load::<ProductCard>(conn)
@@ -183,12 +183,6 @@ impl ProductCard {
     }
 
     pub fn filter_search(form: SearchForm, conn: &PgConnection) -> Vec<ProductCard> {
-
-        use diesel::sql_types::{
-            Integer,
-            Text,
-            Nullable,
-        };
     
         diesel::sql_query(include_str!("../../SQL/filter.sql"))
             .bind::<Nullable<Text>,_>(form.search_string)
@@ -341,6 +335,7 @@ pub struct ProductPromotions {
     top_by_name: bool,
     is_pre_order: bool,
     prod_bought_date: chrono::NaiveDateTime,
+    in_news: bool,
 }
 
 impl ProductPromotions {
@@ -355,7 +350,23 @@ impl ProductPromotions {
             Err(_) => Ok(false),
             Ok(i) => Ok(i.is_pre_order),
         }
+    }
 
+    pub fn exists(prod_id: i32, conn: &PgConnection) -> Result<bool,Error> {
+        use crate::schema::promotions::dsl::*;
+        use chrono::Duration;
+
+        let r: Vec<ProductPromotions> = promotions
+            .filter(product_id.eq(prod_id))
+            .get_results::<ProductPromotions>(conn)?
+            .into_iter()
+            .filter( | prom | {
+             -(chrono::Local::now().naive_utc()
+                    .signed_duration_since( prom.prod_bought_date + Duration::days(7))
+                    .num_days()) < 7
+            })
+            .collect();
+        Ok(r.len() > 0)
     }
 }
 
@@ -420,8 +431,6 @@ impl ProductRating {
     }
 
     pub fn get_by_user(u_id: i32, conn: &PgConnection) -> Vec<ProductRating> {
-        
-        use crate::schema::rating::dsl::*;
 
         diesel::sql_query(include_str!("../../SQL/rating.sql"))
             .bind::<Integer, _>(u_id)
@@ -491,16 +500,17 @@ impl Product {
 
     }
 
-    pub fn get_for_profile(u_id: i32, conn: &PgConnection) -> Result<Vec<(i32,String)>,Error> {
+    pub fn get_for_profile(seller_id: i32, customer_id: i32, conn: &PgConnection) -> Result<Vec<(i32,String)>,Error> {
 
-        use crate::schema::{
-            products,
-            users,
-        };
+        use crate::schema::users;
+        use crate::schema::rating;
 
         Ok(products::table
-            .filter(products::seller_id.eq(u_id))
-            .filter(products::status.eq("published").or(products::status.eq("sold")))
+            .filter(products::seller_id.eq(seller_id))
+            .filter(products::status.eq("sold"))
+            .filter(products::bought_with.eq(customer_id))
+            .left_outer_join(rating::table.on(rating::voter_id.is_null()))
+            //.filter(rating::voter_id.is_null())
             .inner_join(users::table.on(products::seller_id.eq(users::id)))
             .select((products::id,products::title))
             .get_results::<(i32,String)>(conn)?)
@@ -517,14 +527,22 @@ impl Product {
         Ok(())
     }
 
+    pub fn set_customer_id(p_id: i32, c_id: i32, conn: &PgConnection) -> Result<(),Error> {
+
+        use crate::schema::products::dsl::*;
+        
+        diesel::update(products.filter(id.eq(p_id)))
+            .set(bought_with.eq(c_id))
+            .execute(conn)?;
+        Ok(())
+    }
+
     pub fn get_products_by_status_and_user(stat: String, u_id: i32, conn: &PgConnection) -> Result<Vec<ProductWithFav>,Error> {
 
         use crate::schema::products::dsl::*;
         use crate::schema::favourites::dsl::*;
 
-        use chrono::{NaiveDate, NaiveDateTime, Duration};
-
-        let dt: NaiveDateTime = NaiveDate::from_ymd(2016, 7, 8).and_hms(9, 10, 11);
+        use chrono::Duration;
 
         let r = products
             .filter(seller_id.eq(u_id))
@@ -679,9 +697,9 @@ impl ProductAdmin {
             .get_result::<Product>(conn)
             .expect("error getting product by id");
         
-        prod.pictures.into_iter().map(
+        prod.pictures.into_iter().for_each(
             | path | {
-                remove_file(path);
+                remove_file(path).unwrap();
             }
         );
        
@@ -709,6 +727,7 @@ impl PrivForm {
                         top_by_cat.eq(self.top_cat),
                         top_by_name.eq(self.top_name),
                         is_pre_prder.eq(self.pre_order),
+                        in_news.eq(self.take_in_news),
                     ))
                 .execute(conn)?;
         } else {
@@ -719,7 +738,8 @@ impl PrivForm {
                     is_marked.eq(true),
                     top_by_cat.eq(true),
                     top_by_name.eq(true),
-                    is_pre_prder.eq(true),
+                    is_pre_prder.eq(self.pre_order),
+                    in_news.eq(true),
                 ))
             .execute(conn)?;
         }

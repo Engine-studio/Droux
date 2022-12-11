@@ -1,0 +1,25 @@
+{% extends "main" %}
+{% block head %}
+    <link rel="stylesheet" href="/static/css/common.css">
+    <link rel="stylesheet" href="/static/css/static-pages.css">
+    <meta charset="UTF-8">
+    <title>Контакты</title>
+{% endblock head %}
+{% block main %}
+    <main class="static container static__contacts">
+        <h1 class="static__header">Контакты</h1>
+        <p class="static__text">
+            ИП Авдеев А.В.<br>
+            ОГРН: 316774600467044<br>
+            ИНН: 773007004660<br>
+            Банк: СберБанк<br>
+            Р/с: 40802 810 6 38000039544<br>
+            Корреспондентский счет: 30101 810 4 0000000025<br>
+            БИК: 004525225<br>
+            Адрес: Москва, пос. Сосенское, кв-л 14, влд. 14, стр. 1<br>
+            Телефон: +79691577770<br>
+            Адрес электронной почты: drouxgroup@gmail.com
+        </p>
+        <a href="/" class="button static__button">Вернуться на главную</a>
+    </main>
+{% endblock main %}

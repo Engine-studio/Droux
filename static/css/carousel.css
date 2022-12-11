@@ -1,0 +1,131 @@
+.carousel {
+    width: 100%;
+    height: 433px;
+    position: relative;
+    margin: 0;
+    overflow-x: hidden;
+    background-color: black;
+}
+.carousel__all-news {
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    display: flex;
+    flex-wrap: nowrap;
+    transition: transform 0.5s ease;
+    -webkit-transition: transform 0.3s ease;
+}
+
+.carousel__item {
+    position: relative;
+    height: 100%;
+    width: 100vw;
+}
+
+.carousel__image {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.7;
+}
+
+.carousel__container {
+    margin: 0 auto;
+    height: 100%;
+    position: relative;
+    top: 0;
+    color: white;
+    justify-content: center;
+    display: flex;
+    flex-direction: column
+}
+
+.carousel__header {
+    font-size: 36px;
+    font-weight: bold;
+    text-align: center;
+    max-width: 54%;
+    margin: 0 auto 32px;
+}
+
+.carousel__description {
+    font-size: 18px;
+    text-align: center;
+    max-width: 70%;
+    margin: 0 auto 77px;
+}
+
+.carousel__arrow-div {
+    height: 100%;
+    position: absolute;
+    top: 0;
+    width: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2;
+    cursor: pointer;
+}
+
+.carousel__arrow-div_position_left {
+    left: 0;
+}
+
+.carousel__arrow-div_position_right {
+    right: 0;
+}
+
+.carousel__arrow {
+    height: 14px;
+    width: 7px;
+}
+
+.carousel__markers {
+    height: 10px;
+    cursor: pointer;
+    z-index: 2;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 205px;
+    position: absolute;
+    bottom: 6px;
+    left: calc(50% - 102.5px);
+}
+
+.carousel__button {
+    width: 258px;
+    height: 41px;
+    font-size: 18px;
+    color: white;
+    border-color: white;
+    margin: 0 auto;
+    display: flex;
+}
+
+.show-all_part_news {
+    margin: 30px auto 40px;
+}
+
+
+@media (max-width: 800px) {
+    .carousel__header {
+        font-size: 24px;
+        margin-bottom: 22px;
+        max-width: 73%;
+    }
+
+    .carousel__description {
+        font-size: 14px;
+        margin-bottom: 59px;
+        max-width: 73%;
+    }
+
+    .carousel__arrow-div {
+        width: 49px;
+    }
+}
