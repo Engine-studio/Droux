@@ -6,6 +6,9 @@ let portions = 1;
 let filtersActive = false;
 let body;
 let stopItFlag = false;
+let address = window.location.href;
+
+
 
 function checkAndAdd() {
     let currentBottom = document.documentElement.getBoundingClientRect().bottom;
