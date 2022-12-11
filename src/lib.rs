@@ -126,6 +126,8 @@ pub fn app() -> rocket::Rocket {
             routes::users::get_users_favourites,
             routes::users::get_user_products_profile,
             routes::users::get_user_reviews_profile,
+            routes::users::get_user_menu_profile,
+            routes::users::get_user_main_profile,
             routes::product::favourites_add,
             routes::product::favourites_delete,
             routes::admin::admin_users,
@@ -170,6 +172,8 @@ pub fn app() -> rocket::Rocket {
             routes::rescue::rescue,
             routes::admin::rescue_delete,
             routes::admin::rescue_list,
+            routes::users::rm_user_image,
+            routes::users::add_user_image,
             ])
         .attach(Template::fairing())
         .attach(db::Conn::fairing())
