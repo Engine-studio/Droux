@@ -10,7 +10,6 @@ pub mod crm;
 
 #[macro_use]
 extern crate rocket;
-#[macro_use]
 extern crate rocket_contrib;
 
 #[macro_use]
@@ -18,13 +17,13 @@ extern crate diesel;
 extern crate dotenv;
 
 extern crate rocket_slog;
-use rocket_slog::SlogFairing;
 
 use diesel::result::Error as DieselError;
 use rocket::request::Request;
 use rocket::http::Status;
 use rocket::response;
-use rocket::response::{Response, Responder};
+use rocket::response::Responder;
+use rocket_contrib::serve::StaticFiles;
 //use std::error::Error;
 
 #[derive(Debug)]
@@ -78,16 +77,11 @@ impl From<std::str::Utf8Error> for Error {
 }
 
 use rocket_contrib::templates::{Template,tera::*};
-use serde::Serialize;
-use rocket::http::{Cookie, Cookies};
-use rocket_contrib::serve::{StaticFiles,Options};
-use rocket::config::{Config, Environment, LoggingLevel};
 
 pub fn app() -> rocket::Rocket {
 
     rocket::ignite()
         .mount("/",routes![
-            routes::auth::login,
             routes::admin::admin_main,
             routes::admin::admin_product,
             routes::admin::product_change,
@@ -96,9 +90,8 @@ pub fn app() -> rocket::Rocket {
             routes::auth::authorize,
             routes::auth::logout,
             routes::index,
-            routes::auth::register,
-            routes::auth::register_get,
             routes::auth::verify_link,
+            routes::auth::register,
             routes::product::product_create,
             routes::product::product_create_get,
             routes::product::get_product_by_id,
@@ -131,6 +124,18 @@ pub fn app() -> rocket::Rocket {
             routes::product::get_order_final,
             routes::product::get_order,
             routes::product::post_order,
+            routes::static_pages::commission,
+            routes::static_pages::contacts,
+            routes::static_pages::criteria,
+            routes::static_pages::faq,
+            routes::static_pages::for_customer,
+            routes::static_pages::for_seller,
+            routes::static_pages::help,
+            routes::static_pages::privacy_terms,
+            routes::static_pages::save_deal,
+            routes::static_pages::save_deal_terms,
+            routes::static_pages::serve_terms,
+            routes::static_pages::user_terms,
             ])
         .attach(Template::fairing())
         .attach(db::Conn::fairing())

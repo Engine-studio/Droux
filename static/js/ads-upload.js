@@ -2,19 +2,26 @@ let searchResults = document.querySelector('.search-results');
 
 let timer = setInterval(checkAndAdd,3000);
 
-let portions = 0;
+let portions = 1;
+let filtersActive = false;
+let body;
 
 function checkAndAdd() {
     let currentBottom = document.documentElement.getBoundingClientRect().bottom;
     if (currentBottom < document.documentElement.clientHeight + 450) {
-        portions+=1;
         let request = new XMLHttpRequest();
         request.open("POST", '/filters/lots', true);
         request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        let body = 'search_string=&limit=12&offset=' + String(portions * 12);
-        request.send(body)
+        if (filtersActive) {
+            request.send(body + '&offset=' + (12 * portions));
+        } else {
+            body = 'search_string=&limit=12' + '&offset=' + (12 * portions);
+            request.send(body)
+        }
+        portions+=1;
         request.onreadystatechange = function() {
             jsonToAds(request.response);
+            changeSize();
         }
     }
 }
@@ -23,24 +30,77 @@ let filters = document.getElementsByClassName('filters__sector-options');
 for (let i = 0; i < filters.length; i++) {
     let options = filters[i].querySelectorAll('input[type=radio]');
     for (let j = 0; j < options.length; j++) {
-        options[i].addEventListener('change', NewSearch);
+        options[j].addEventListener('change', NewSearch);
     }
 }
 
-let headerSearchField = document.querySelector('#header-search');
+let sort = document.querySelector('div.sort-by');
+let mobileSort = document.querySelector('aside.sort-by');
+
+let sortOptions =sort.getElementsByTagName('input');
+let mobileSortOptions = mobileSort.getElementsByTagName('input');
+
+for (let i = 0; i < sortOptions.length; i++) {
+    sortOptions[i].addEventListener('change', NewSearch);
+    mobileSortOptions[i].addEventListener('change', NewSearch);
+}
+
+let headerSearchField = document.getElementById('header-search');
 let headerSearchButton = document.querySelector('.search__button');
 
 headerSearchField.addEventListener('input', NewSearch);
 headerSearchButton.addEventListener('click', NewSearch);
-
+let timeout = 0;
 function NewSearch() {
-    clearTimeout(filterTimer);
-    let filterTimer = (function() {
-        let body = encodeURI('search_string=' + headerSearchField.value + '&limit=' + '')
-    })
+    if (timeout != 0) {
+        clearTimeout(timeout);
+    }
+    timer = setInterval(checkAndAdd,3000);
+    timeout = setTimeout(useFilters, 1000);
 }
 
-
+function useFilters() {
+    portions = 0;
+    body = 'limit=12';
+    if (headerSearchField.value != '') {
+        body += '&search_string=' + headerSearchField.value;
+    }
+    if (filters[0].querySelector('input:checked') != null) {
+        body += '&prod_type_id=' + filters[0].querySelector('input:checked').value;
+    }
+    if (filters[1].querySelector('input:checked') != null) {
+        body += '&category_id=' + filters[1].querySelector('input:checked').value;
+    }
+    if (filters[2].querySelector('input:checked') != null) {
+        body += '&subcategory_id=' + filters[2].querySelector('input:checked').value;
+    }
+    if (filters[3].querySelector('input:checked') != null) {
+        body += '&prod_brand_id=' + filters[3].querySelector('input:checked').value;
+    }
+    if (filters[4].querySelector('input:checked') != null) {
+        body += '&prod_size_id=' + filters[4].querySelector('input:checked').value;
+    }
+    if (filters[5].querySelector('input:checked') != null) {
+        body += '&product_state_id=' + filters[5].querySelector('input:checked').value;
+    }
+    filtersActive = true;
+    let request = new XMLHttpRequest();
+    request.open("POST", '/filters/lots', true);
+    request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    let res = document.querySelector('.search-results');
+    res.parentNode.removeChild(res);
+    searchResults = document.createElement('div');
+    searchResults.className = 'search-results';
+    let main = document.querySelector('main');
+    main.append(searchResults);
+    request.send(encodeURI(body + '&offset=' + (12 * portions)));
+    portions += 1;
+    request.onreadystatechange = function() {
+        jsonToAds(request.response);
+        changeSize();
+    }
+    timeout = 0;
+}
 
 
 
@@ -118,6 +178,10 @@ function jsonToAds(response) {
             productPhoto.href = adLink;
             productPhoto.innerHTML = "<img src=\"" + resp[i].pictures[j] + "\" class=\"ad__img\" alt=\"\">";
             imageDiv.append(productPhoto);
+        }
+        let favDiv = newAd.querySelector('.ad__favourite-icon');
+        if (document.getElementById('auth-button')) {
+            favDiv.style.display = 'none';
         }
         if (resp[i].is_in_favourites) {
             newAd.querySelector('.ad__favourite-icon-img_filled').classList.add('fav-icon_active');

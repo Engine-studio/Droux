@@ -1,6 +1,7 @@
 extern crate reqwest;
 use serde_json::json;
 use crate::Error;
+use std::env;
 use crate::routes::product::BuyForm;
 use crate::routes::product::PrivForm;
 use serde::{
@@ -11,7 +12,7 @@ use serde::{
 
 impl BuyForm {
 
-    pub fn send_new_order_to_crm(&self) -> Result<(), Error> {
+    pub fn send_new_order_to_crm(&self) -> Result<(String,String), Error> {
 
         let data = json!({
                 "firstName": self.name,
@@ -53,9 +54,11 @@ impl BuyForm {
                     },
                 ]
         });
+        let retail_api_key = env::var("RETAIL_CRM_API_KEY")
+        .expect("RETAIL_CRM_API_KEY must be set");
         print!("my_json:\n{:#?}\n",&data.to_string());
         let params = [
-            ("apiKey", "qZPXO3WaF2LLQI3YEZHdpJLoYZxhHdzH"),
+            ("apiKey", &retail_api_key[..]),
             ("site", "droux.ru"),
             ("order", &data.to_string())];
 
@@ -65,11 +68,19 @@ impl BuyForm {
             .send()?
             .text()?;
         print!("{:#?}\n",res);
-        Ok(())
+        let v: serde_json::Value = serde_json::from_str(&(res)[..])?;
+        print!("{:#?}\n",v);
+        let r1 = v["order"]["number"].to_string();
+        let r2 = v["order"]["delivery"]["address"]["text"].to_string();
+        let len1 = r1.len();
+        let len2 = r2.len();
+        let r1 = r1[1..len1-1].to_string();
+        let r2 = r2[1..len2-1].to_string();
+        Ok((r1,r2))
     }
 }
 
-#[derive(Serialize,Deserialize)]
+#[derive(Serialize,Deserialize,Debug)]
 pub enum TrDescription {
     Priveleges(PrivForm),
     Order(BuyForm),
@@ -78,13 +89,19 @@ pub enum TrDescription {
 
 impl PrivForm {
     pub fn send_sber_pay_link(&self, summ: i64) -> Result<String,Error> {
-
+        let site_url = env::var("SITE_URL")
+        .expect("SITE_URL must be set");
+        let sber_uname = env::var("SBERBANK_USERNAME")
+        .expect("SBERBANK_USERNAME must be set");
+        let sber_pass = env::var("SBERBANK_PASSWORD")
+        .expect("SBERBANK_PASSWORD must be set"); 
+        print!("INFO| sberbank url return {}\n",site_url);
         let params = [
-            ("userName", "T773007004660-api"),
-            ("password", "T773007004660"),
+            ("userName", &sber_uname[..]),
+            ("password", &sber_pass[..]),
             ("amount", &format!("{}",summ*100)[..]),
             ("currency", "643"),
-            ("returnUrl", "http://178.154.229.126/product/pay"),
+            ("returnUrl", &(site_url + &("/product/pay".to_string()))[..]),
             ("orderNumber", &format!("{}{}pay",self.product_name,self.product_id)[..]),
             ("description", &serde_json::to_string(&TrDescription::Priveleges(self.clone()))?[..])];
 
@@ -104,10 +121,13 @@ impl PrivForm {
 
 impl TrDescription {
     pub fn get_sber_pay_status(orderId: String) -> Result<TrDescription, Error> {
-
+        let sber_uname = env::var("SBERBANK_USERNAME")
+        .expect("SBERBANK_USERNAME must be set");
+        let sber_pass = env::var("SBERBANK_PASSWORD")
+        .expect("SBERBANK_PASSWORD must be set"); 
         let params = [
-            ("userName", "T773007004660-api"),
-            ("password", "T773007004660"),
+            ("userName", &sber_uname[..]),
+            ("password", &sber_pass[..]),
             ("orderId", &orderId[..])];
 
         let client = reqwest::blocking::Client::new();
@@ -145,14 +165,19 @@ impl TrDescription {
 
 impl BuyForm {
     pub fn send_sber_pre_pay_link(&self) -> Result<String,Error> {
-
-        print!("here");
+        let site_url = env::var("SITE_URL")
+        .expect("SITE_URL must be set");
+        let sber_uname = env::var("SBERBANK_USERNAME")
+        .expect("SBERBANK_USERNAME must be set");
+        let sber_pass = env::var("SBERBANK_PASSWORD")
+        .expect("SBERBANK_PASSWORD must be set"); 
+        print!("INFO| sberbank url return {}\n",site_url);
         let params = [
-            ("userName", "T773007004660-api"),
-            ("password", "T773007004660"),
+            ("userName", &sber_uname[..]),
+            ("password", &sber_pass[..]),
             ("amount", &format!("{}",self.pr_price*100)),
             ("currency", &format!("{}",643)[..]),
-            ("returnUrl", "http://localhost:8000/product/pay"),
+            ("returnUrl", &(site_url + &"/product/pay".to_string())[..]),
             ("orderNumber", &format!("{}{}order",self.pr_name,self.pr_id)[..]),
             ("description", &serde_json::to_string(&TrDescription::Order(self.clone()))?[..])];
 

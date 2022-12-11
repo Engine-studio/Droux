@@ -22,6 +22,7 @@ frame[currentLastPhoto + 1].append(label);
 arrowLeft.addEventListener('click', SwipeFrames);
 arrowRight.addEventListener('click', SwipeFrames);
 
+
 function GetWidth() {
     let frame = frames.getElementsByClassName('uploader__photo-frame')[0];
     let frameWidth = Number(getComputedStyle(frame).width.slice(0, -2));
@@ -43,7 +44,6 @@ for (let i = 0; i < crosses.length; i++) {
     crosses[i].addEventListener('click', DeleteFrame);
 }
 function DeleteFrame(){
-    console.log('hui')
     let delta = GetWidth();
     frames.style = "transform: translateX(-" + String(currentFirstFrame * delta) + "px);";
     let delFrame = event.currentTarget.parentNode;
@@ -70,6 +70,7 @@ function DeleteFrame(){
     function DelThis(){
         delFrame.remove();
     }
+    check3()
 }
 
 popUp.addEventListener('click', ClosePopUp);
@@ -84,8 +85,8 @@ function ClosePopUp() {
 }
 
 let scissors = new Croppie(place, {
-    viewport: {width: 350, height: 311.5},
-    boundary: {width: 350, height: 350},
+    viewport: {width: document.documentElement.clientWidth * 0.32, height: document.documentElement.clientWidth * 0.285},
+    boundary: {width: document.documentElement.clientWidth * 0.5, height: document.documentElement.clientHeight * 0.5},
     showZoomer: true,
     enableOrientation: false
 })
@@ -112,7 +113,16 @@ function UploadPhoto() {
 popUp.getElementsByClassName('pop-up__button_ok')[0].addEventListener('click', MakeMini);
 
 function MakeMini(){
-    scissors.result('blob', 'original').then(function(blob){
+    let imageSize = {
+        width: 635,
+        height: 568,
+        type: 'square'
+    };
+    scissors.result({
+        type: 'blob',
+        size: imageSize,
+        format: 'png',
+        quality: 1}).then(function(blob){
 
         currentLastPhoto += 1;
 
@@ -124,7 +134,7 @@ function MakeMini(){
         frame[currentLastPhoto].append(miniature);
 
         let frameCross = document.createElement('img');
-        frameCross.src = 'assets/close.svg';
+        frameCross.src = '/static/assets/close.svg';
         frameCross.alt = '';
         frameCross.className = 'uploader__delete-frame';
         frame[currentLastPhoto].append(frameCross);
@@ -156,6 +166,7 @@ function MakeMini(){
         frames.style = "transform: translateX(-" + String(currentFirstFrame * GetWidth()) + "px);";
     });
     popUp.classList.remove('pop-up_visible');
+    add_buttons[2].disabled = false;
 }
 
 
@@ -172,7 +183,6 @@ async function PostProduct() {
     let number = document.getElementsByClassName('ad-form__num')[0];
     let email = document.getElementsByClassName('ad-form__email')[0];
 
-    console.log("afsdaffas");
     let body = new FormData();
     body.append('type_id', sex.querySelector('input:checked').value);
     body.append('category_id', category.querySelector('input:checked').value);
@@ -185,25 +195,23 @@ async function PostProduct() {
     body.append('price', price.querySelector('input').value);
     body.append('phone_number', number.querySelector('input').value);
     body.append('location', email.querySelector('input').value);
-    body.append('seller_id', 1);
+    body.append('seller_id', document.querySelector('input[name=\'seller_id\']').value);
 
     let photos = document.getElementsByClassName('uploader__frame-img');
-    console.log(photos);
     for (let i = 0; i < 10; i++) {
         let id = 'photo' + String(i + 1);
         if (photos[i] !=null) {
             let blob = await fetch(photos[i].src).then(r => r.blob())
             body.append(id, blob);
-            console.log(blob);
         }
     }
+
 
     let postAd = new XMLHttpRequest();
     postAd.open('POST', '/product/create', true);
     postAd.send(body);
     postAd.onreadystatechange = function() {
         let redirectRoute = "/product/promotion/create/" + String(postAd.response);
-        console.log(redirectRoute);
         window.location.replace(redirectRoute);
     }
     return false;
@@ -222,7 +230,6 @@ async function EditProduct() {
     let number = document.getElementsByClassName('ad-form__num')[0];
     let email = document.getElementsByClassName('ad-form__email')[0];
 
-    console.log("afsdaffas");
     let body = new FormData();
     body.append('type_id', sex.querySelector('input:checked').value);
     body.append('category_id', category.querySelector('input:checked').value);
@@ -235,16 +242,15 @@ async function EditProduct() {
     body.append('price', price.querySelector('input').value);
     body.append('phone_number', number.querySelector('input').value);
     body.append('location', email.querySelector('input').value);
-    body.append('seller_id', 1);
+    body.append('seller_id', document.querySelector('input[name=\'seller_id\']').value);
+    console.log(body.toString());
 
     let photos = document.getElementsByClassName('uploader__frame-img');
-    console.log(photos);
     for (let i = 0; i < 10; i++) {
         let id = 'photo' + String(i + 1);
         if (photos[i] !=null) {
             let blob = await fetch(photos[i].src).then(r => r.blob())
             body.append(id, blob);
-            console.log(blob);
         }
     }
     
@@ -252,13 +258,11 @@ async function EditProduct() {
     let route = "/admin/product/change/" + prodId
     console.log(route);
     let postAd = new XMLHttpRequest();
-    let page = document.getElementById('page_num');
     postAd.open('POST', route, true);
     postAd.responseType = 'text';
     postAd.send(body);
     postAd.onreadystatechange = function() {
         let redirectRoute = "/admin/product/1";
-        console.log(redirectRoute);
         window.location.replace(redirectRoute);
     }
     return false;

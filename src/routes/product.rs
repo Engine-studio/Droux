@@ -1,5 +1,4 @@
-use rocket::http::{Cookie, Cookies};
-use rocket_contrib::templates::{Template};
+use rocket_contrib::templates::Template;
 use rocket::request::Form;
 use rocket::response::Redirect;
 use serde::{
@@ -14,16 +13,15 @@ use crate::Error;
 extern crate rocket_multipart_form_data;
 use rocket::Data;
 use rocket::http::ContentType;
-use std::sync::atomic::Ordering;
 use rocket_multipart_form_data::{
-    mime, MultipartFormData, MultipartFormDataField, 
-    MultipartFormDataOptions, RawField, TextField, Repetition
+    MultipartFormData, 
+    MultipartFormDataField, 
+    MultipartFormDataOptions,
 };
 use crate::users::CommonUser;
 use crate::routes::Either;
 use crate::routes::get_base_context;
 use crate::models::product::ProductCard;
-use crate::db::product::reviewed_by_user;
 use rocket::http::Status;
 use crate::models::product::NewProduct;
 
@@ -31,9 +29,8 @@ use crate::models::product::NewProduct;
 #[get("/product/<id>")]
 pub fn get_product_by_id(id: i32, user: CommonUser, conn: crate::db::Conn) -> Template {
     
-    use crate::db::users::get_user_by_email;
     use crate::models::product::ProductContext;
-    use crate::db::product::{get_brand_list,get_brand_name,get_product_data};
+    use crate::db::product::get_brand_list;
 
     crate::db::product::increment_product_views(id, &conn);
     crate::db::product::increment_product_today_views(id, &conn);
@@ -44,8 +41,6 @@ pub fn get_product_by_id(id: i32, user: CommonUser, conn: crate::db::Conn) -> Te
     let mut ctx = get_base_context(user.clone(), &conn);
     ctx.insert("brands", &get_brand_list(&conn));
     ctx.insert("most_viewed_products", &ProductCard::get_recently_added(8, opt_id.clone(), &conn));
-
-    let product = get_product_data(id, &conn);
 
     let user_id = match user {
         CommonUser::Logged(u) => Some(u.id),
@@ -64,6 +59,9 @@ pub fn get_product_by_id(id: i32, user: CommonUser, conn: crate::db::Conn) -> Te
 
 use std::path::{Path, PathBuf};
 use rocket::response::NamedFile;
+// use rocket::State;
+// extern crate rocket_file_cache;
+// use rocket_file_cache::{Cache, CacheBuilder, CachedFile};
 
 #[get("/static/<file..>")]
 pub fn file(file: PathBuf) -> Option<NamedFile> {
@@ -76,7 +74,7 @@ pub fn product_create_get(user: CommonUser, conn: crate::db::Conn) -> Either {
     let mut ctx = get_base_context(user.clone(), &conn);
     get_filter_context(&mut ctx, &conn);
 
-    if let CommonUser::Logged(user_data) = user {
+    if let CommonUser::Logged(_) = user {
             Either::Template(Template::render("product/create", &ctx))
     } else {
         Either::Redirect(Redirect::to("/"))
@@ -177,6 +175,7 @@ pub fn parse_multiform_product(content_type: &ContentType, form: Data) -> NewPro
 
     let price       : i32 = unpack(price).trim().parse().expect("error parsing price");
     let seller_id   : i32 = unpack(seller_id).trim().parse().expect("error parsing seller_id");
+    print!("SELLER ID| {}",&seller_id);
     let brand_id    : i32 = unpack(brand_id).trim().parse().expect("error parsing category_id");
     let sub_category_id : i32 = unpack(sub_category_id).trim().parse().expect("error parsing category_id");
     let size_id     : i32 = unpack(size_id).trim().parse().expect("error parsing category_id");
@@ -198,7 +197,6 @@ pub fn parse_multiform_product(content_type: &ContentType, form: Data) -> NewPro
     unpack_photo(&photo9, &mut photos_array, &title,9);
     unpack_photo(&photo10, &mut photos_array, &title,10);
     
-    use crate::models::product::NewProduct;
     NewProduct {
         sub_category_id: sub_category_id,
         title: title,
@@ -219,11 +217,12 @@ pub fn parse_multiform_product(content_type: &ContentType, form: Data) -> NewPro
 pub fn product_create(content_type: &ContentType, form: Data, user: CommonUser, conn: crate::db::Conn) ->  String {
    
     use crate::db::product::create_product;
-
-    let p = parse_multiform_product(content_type, form);
-    let id = create_product(p, &conn);
-    print!("{}",&id);
-    id
+    if let CommonUser::Logged(_) = user {
+        let p = parse_multiform_product(content_type, form);
+        let id = create_product(p, &conn);
+        return id;
+    }
+    "-1".to_string()
 }
 
 #[derive(FromForm,Clone)]
@@ -272,7 +271,7 @@ pub fn get_promotions(id: i32, user: CommonUser, conn: crate::db::Conn) -> Resul
     }
 }
 
-#[derive(FromForm,Clone,Serialize,Deserialize)]
+#[derive(FromForm,Clone,Serialize,Deserialize,Debug)]
 pub struct BuyForm {
     pub name: String,
     pub username: String,
@@ -283,6 +282,7 @@ pub struct BuyForm {
     pub pr_price: i32,
     pub seller_username: String,
     pub seller_phone: String,
+    pub seller_id: i32,
     pub seller_email: String,
     pub seller_location: String,
     pub pr_is_pre_order: bool,
@@ -290,7 +290,7 @@ pub struct BuyForm {
     pub pr_name: String,
 }
 
-#[derive(FromForm,Clone,Serialize,Deserialize)]
+#[derive(FromForm,Clone,Serialize,Deserialize,Debug)]
 pub struct PrivForm {
     pub pre_order: bool,
     pub top_name: bool,
@@ -308,19 +308,23 @@ use crate::crm::{
 };
 
 #[get("/product/pay?<orderId>&<lang>")]
-pub fn check_pay(orderId: String, lang: String, user: CommonUser, conn: crate::db::Conn) -> Result<Either,Error> {
+pub fn check_pay(orderId: String, lang: String, conn: crate::db::Conn) -> Result<Either,Error> {
     let transcation = TrDescription::get_sber_pay_status(orderId)?;
+    print!("\nINFO| {:?}\n",&transcation);
     match transcation {
         TrDescription::Priveleges(p) => {
             p.save(&conn)?;
+            print!("\nINFO| got in priveleges\n");
             Ok(Either::Redirect(Redirect::to("/product/promotion/final")))
         },
         TrDescription::Order(o) => {
-            o.send_new_order_to_crm()?;
-            Product::set_status(o.pr_id, "sold".to_string(), &conn)?;
-            Ok(Either::Redirect(Redirect::to("/product/order/final")))
+            let (num, addr) = o.send_new_order_to_crm()?;
+            Product::set_status(o.pr_id.clone(), "sold".to_string(), &conn)?;
+            Product::set_customer_id(o.pr_id,o.seller_id.clone(), &conn)?;
+            print!("\nINFO| got in order\n");
+            Ok(Either::Redirect(Redirect::to(format!("/product/order/final/{}/{}",num,addr))))
         },
-        TrDescription::Unpayed => Ok(Either::Redirect(Redirect::to("/")))
+        _ => Ok(Either::Redirect(Redirect::to("/")))
     }
 }
 use crate::models::users::Users;
@@ -341,8 +345,8 @@ pub fn get_order(prod_id: i32, user: CommonUser, conn: crate::db::Conn) -> Resul
 }
 
 #[post("/product/order/create",data="<form>")]
-pub fn post_order(form: Form<BuyForm>, user: CommonUser, conn: crate::db::Conn) -> Result<Either,Error> {
-    if let CommonUser::Logged(user) = user {
+pub fn post_order(form: Form<BuyForm>, user: CommonUser) -> Result<Either,Error> {
+    if let CommonUser::Logged(_) = user {
         let url = form.send_sber_pre_pay_link()?;
         return Ok(Either::Redirect(Redirect::to(url)));
     }
@@ -350,8 +354,7 @@ pub fn post_order(form: Form<BuyForm>, user: CommonUser, conn: crate::db::Conn) 
 }
 
 #[post("/product/promotion/create",data="<form>")]
-pub fn post_promotions(form: Form<PrivForm>, user: CommonUser, conn: crate::db::Conn) -> Result<Either,Error> {
-    let mut ctx = get_base_context(user.clone(), &conn);
+pub fn post_promotions(form: Form<PrivForm>, user: CommonUser) -> Result<Either,Error> {
     if let CommonUser::Logged(user) = user {
         if form.seller_id != user.id {
             return Ok(Either::Redirect(Redirect::to("/")));
@@ -371,8 +374,10 @@ pub fn post_promotions(form: Form<PrivForm>, user: CommonUser, conn: crate::db::
             399
         } else if form.top_cat {
             149
-        } else {
+        } else if form.top_name {
             189
+        } else {
+            0
         };
         if form.pre_order {
             summ += 499;
@@ -393,8 +398,10 @@ pub fn get_promotions_final(user: CommonUser, conn: crate::db::Conn) -> Result<E
     Ok(Either::Template(Template::render("product/promotion_final", &ctx)))
 }
 
-#[get("/product/order/final")]
-pub fn get_order_final(user: CommonUser, conn: crate::db::Conn) -> Result<Either,Error> {
-    let ctx = get_base_context(user.clone(), &conn);
+#[get("/product/order/final/<num>/<addr>")]
+pub fn get_order_final(num: String, addr: String, user: CommonUser, conn: crate::db::Conn) -> Result<Either,Error> {
+    let mut ctx = get_base_context(user.clone(), &conn);
+    ctx.insert("order_number", &num);
+    ctx.insert("order_adress", &addr);
     Ok(Either::Template(Template::render("product/order_final", &ctx)))
 }
