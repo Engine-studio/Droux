@@ -11,8 +11,6 @@ use crate::db::filters::get_filter_context;
 use crate::Error;
 
 extern crate rocket_multipart_form_data;
-use rocket::Data;
-use rocket::http::ContentType;
 use rocket_multipart_form_data::{
     MultipartFormData, 
     MultipartFormDataField, 
@@ -26,7 +24,28 @@ use rocket::http::Status;
 use crate::models::product::NewProduct;
 use crate::models::news::News;
 
-#[post("/news_add",data="<form>")]
-pub fn news_add(form: Data, content_type: ContentType, user: CommonUser, conn: crate::db::Conn) -> Result<Status,Error> {
+#[get("/news/<id>")]
+pub fn article(id: i32, user: CommonUser, conn: crate::db::Conn) -> Result<Template,Error> {
+    let mut ctx = get_base_context(user, &conn);
+    ctx.insert("article", &News::get(id, &conn)?);
+    Ok(Template::render("news/main", ctx))
+}
 
+#[get("/news/feed/products")]
+pub fn products(user: CommonUser, conn: crate::db::Conn) -> Result<Template,Error> {
+    let mut ctx = get_base_context(user.clone(), &conn);
+    let user_id = match user {
+        CommonUser::Logged(u) => Some(u.id),
+        CommonUser::NotLogged() => None,
+    };
+    ctx.insert("products", &ProductCard::in_news(user_id, &conn)?);
+    Ok(Template::render("news/products", ctx))
+}
+
+#[get("/news/feed")]
+pub fn feed(user: CommonUser, conn: crate::db::Conn) -> Result<Template,Error> {
+    let mut ctx = get_base_context(user, &conn);
+    ctx.insert("articles", &News::pages(&conn)?);
+    ctx.insert("banners", &News::banners(6, &conn)?);
+    Ok(Template::render("news/feed", ctx))
 }

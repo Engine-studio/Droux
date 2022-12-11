@@ -1,0 +1,16 @@
+{% extends "main" %}
+{% block head %}
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/static/css/common.css">
+    <title></title>
+{% endblock head %}
+{% block main %}  
+    {{ article.title }}
+    {{ article.subtitle }}
+    {{ article.body }}
+    <img src="/{{ article.banner }}">
+    <img src="/{{ article.picture }}">
+    {{ article.creation_datetime | date(format="%A, %B %d") | upper }}
+{% endblock main %}
+{% block scripts %}
+{% endblock scripts %}
