@@ -24,7 +24,7 @@
                         {{ my_user.username }}
                     </span>
                     <span class="card__reg-date">
-                        На Droux с {{ my_user.register_data | date }}
+                        На Droux с {{ my_user.register_data | date(format="%d.%m.%Y") }}
                     </span>
                     <div class="card__rating-div">
                         <span class="rating__num">
@@ -42,7 +42,6 @@
                 </div>
             </div>
             <div class="card__change-photo">
-                Скоро здесь будут подписки или настройки профиля
                 <a href="/lk/subscribes">Подписки: {{ your_sub_count }} Подписчики: {{ you_sub_count }}</a>
             </div>
             <div class="card__nav">

@@ -13,7 +13,7 @@ pub fn get_filter_context(ctx: &mut Context, conn: &PgConnection) {
     ctx.insert("ProductSizes",&get_product_sizes(conn));
     ctx.insert("ProductTypes", &get_product_types(conn));
     ctx.insert("ProductStates", &get_product_states(conn));
-    ctx.insert("ProductCategories", &get_category_list(conn));
+    ctx.insert("ProductCategories", &get_categories_for_header(conn));
 
 }
 
@@ -22,6 +22,7 @@ pub fn get_brands(conn: &PgConnection) ->  Vec<Brand> {
     use crate::schema::brands::dsl::*;
 
     brands
+        .order_by(name.asc())
         .load::<Brand>(conn)
         .expect("Error loading all brands")
 }

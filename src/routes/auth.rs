@@ -7,6 +7,7 @@ use crate::routes::Either;
 use super::get_base_context;
 use crate::users::CommonUser;
 use crate::models::product::ProductCard;
+use crate::models::news::News;
 
 use crate::auth::make_jwt_for_user;
 
@@ -43,6 +44,7 @@ pub fn authorize(form: Form<LoginForm>, user: CommonUser, mut cookies: Cookies, 
         print!("wrong user data");
         let mut ctx = get_base_context(user.clone(), &conn);
         ctx.insert("login_fail",&true);
+        ctx.insert("banners", &News::banners(3, &conn).unwrap());
         ctx.insert("register_fail",&false);
         let opt_id = match user.clone() {
             CommonUser::Logged(u) => Some(u.id),
@@ -89,6 +91,7 @@ pub fn register(form: Form<RegisterForm>, user: CommonUser, conn: crate::db::Con
         Err(e) => {
             print!("error getting link in register POST func");
             ctx.insert("login_fail",&false);
+            ctx.insert("banners", &News::banners(3, &conn).unwrap());
             ctx.insert("register_fail",&true);
             ctx.insert("err_field", &e[..]);
             return Either::Template(Template::render("index", &ctx));
@@ -96,10 +99,10 @@ pub fn register(form: Form<RegisterForm>, user: CommonUser, conn: crate::db::Con
     };
     let url = "/verify/".to_string()+&link[..];
     print!("url: {}\n",&url);
-    Either::Redirect(Redirect::to(url))
-    //print!("auth ref: {}",reference);
-    //crate::auth::send_auth_link(reference, form.email.clone());
-    //Template::render("auth/verify",get_base_context(user, &conn))
+    //Either::Redirect(Redirect::to(url))
+    print!("auth ref: {}",url);
+    crate::auth::send_auth_link(url, form.email.clone());
+    Either::Template(Template::render("auth/verify",get_base_context(user, &conn)))
 
 }
 

@@ -257,10 +257,11 @@ pub fn favourites_delete(form: Form<FavouritesForm>, user: CommonUser, conn: cra
 use crate::models::product::Product;
 #[get("/product/promotion/create/<id>")]
 pub fn get_promotions(id: i32, user: CommonUser, conn: crate::db::Conn) -> Result<Either,Error> {
+    use crate::models::product::ProductPromotions;
     let mut ctx = get_base_context(user.clone(), &conn);
     if let CommonUser::Logged(user) = user {
         let pr = Product::get_by_id(id, &conn);
-        if pr.seller_id != user.id {
+        if pr.seller_id != user.id || ProductPromotions::exists(id.clone(), &conn)? {
             return Ok(Either::Redirect(Redirect::to("/")));
         }
         ctx.insert("product", &pr);
@@ -301,6 +302,7 @@ pub struct PrivForm {
     pub seller_id: i32,
     pub product_id: i32,
     pub product_name: String,
+    pub promo: String,
 }
 
 use crate::crm::{
@@ -354,7 +356,8 @@ pub fn post_order(form: Form<BuyForm>, user: CommonUser) -> Result<Either,Error>
 }
 
 #[post("/product/promotion/create",data="<form>")]
-pub fn post_promotions(form: Form<PrivForm>, user: CommonUser) -> Result<Either,Error> {
+pub fn post_promotions(form: Form<PrivForm>, user: CommonUser, conn: crate::db::Conn) -> Result<Either,Error> {
+    use crate::models::promos::Promo;
     if let CommonUser::Logged(user) = user {
         if form.seller_id != user.id {
             return Ok(Either::Redirect(Redirect::to("/")));
@@ -362,26 +365,27 @@ pub fn post_promotions(form: Form<PrivForm>, user: CommonUser) -> Result<Either,
         if form.none {
             return Ok(Either::Redirect(Redirect::to("/product/promotion/final")));
         }
-        let mut summ: i64 = if form.all || (form.take_in_news && form.top_cat && form.top_name) {
-            599
+        let mut summ: f64 = if form.all || (form.take_in_news && form.top_cat && form.top_name) {
+            599.0
         } else if form.take_in_news && form.top_cat {
-            399 + 149
+            399.0 + 149.0
         } else if form.take_in_news && form.top_name {
-            399 + 189
+            399.0 + 189.0
         } else if form.top_name && form.top_cat {
-            189 + 149
+            189.0 + 149.0
         } else if form.take_in_news {
-            399
+            399.0
         } else if form.top_cat {
-            149
+            149.0
         } else if form.top_name {
-            189
+            189.0
         } else {
-            0
+            0.0
         };
         if form.pre_order {
-            summ += 499;
+            summ += 499.0;
         }
+        summ = Promo::get_sale(summ, form.promo.clone(), &conn);
         let url = form
             .into_inner()
             .send_sber_pay_link(summ)?;

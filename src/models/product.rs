@@ -121,12 +121,24 @@ pub struct SearchForm {
     pub user_id: Option<i32>,
 }
 
+#[derive(Serialize,Clone,Debug,QueryableByName)]
+pub struct ProductNews {
+    #[sql_type="Integer"]
+    pub id: i32,
+    #[sql_type="Text"]
+    pub title: String,
+    #[sql_type="Text"]
+    pub descr: String,
+    #[sql_type="Text"]
+    pub pictures: String,
+}
+
 impl ProductCard {
 
-    pub fn in_news(user_id: i32, conn: &PgConnection) -> Result<Vec<ProductCard>,Error> {
+    pub fn in_news(user_id: Option<i32>, conn: &PgConnection) -> Result<Vec<ProductNews>,Error> {
         let r = diesel::sql_query(include_str!("../../SQL/get_in_news.sql"))
         .bind::<Nullable<Integer>, _>(user_id)
-        .get_results::<ProductCard>(conn)?;
+        .get_results::<ProductNews>(conn)?;
         Ok(r)
     }
 
@@ -338,7 +350,23 @@ impl ProductPromotions {
             Err(_) => Ok(false),
             Ok(i) => Ok(i.is_pre_order),
         }
+    }
 
+    pub fn exists(prod_id: i32, conn: &PgConnection) -> Result<bool,Error> {
+        use crate::schema::promotions::dsl::*;
+        use chrono::Duration;
+
+        let r: Vec<ProductPromotions> = promotions
+            .filter(product_id.eq(prod_id))
+            .get_results::<ProductPromotions>(conn)?
+            .into_iter()
+            .filter( | prom | {
+             -(chrono::Local::now().naive_utc()
+                    .signed_duration_since( prom.prod_bought_date + Duration::days(7))
+                    .num_days()) < 7
+            })
+            .collect();
+        Ok(r.len() > 0)
     }
 }
 
@@ -472,13 +500,17 @@ impl Product {
 
     }
 
-    pub fn get_for_profile(u_id: i32, conn: &PgConnection) -> Result<Vec<(i32,String)>,Error> {
+    pub fn get_for_profile(seller_id: i32, customer_id: i32, conn: &PgConnection) -> Result<Vec<(i32,String)>,Error> {
 
         use crate::schema::users;
+        use crate::schema::rating;
 
         Ok(products::table
-            .filter(products::seller_id.eq(u_id))
-            .filter(products::status.eq("published").or(products::status.eq("sold")))
+            .filter(products::seller_id.eq(seller_id))
+            .filter(products::status.eq("sold"))
+            .filter(products::bought_with.eq(customer_id))
+            .left_outer_join(rating::table.on(rating::voter_id.is_null()))
+            //.filter(rating::voter_id.is_null())
             .inner_join(users::table.on(products::seller_id.eq(users::id)))
             .select((products::id,products::title))
             .get_results::<(i32,String)>(conn)?)
