@@ -106,27 +106,66 @@ pub struct ProductCard {
     pub seller_rating: i64,
 }
 
+use rocket::request::FromFormValue;
+use rocket::http::RawStr;
+
+#[derive(Clone,Serialize,Deserialize,Queryable,Debug)]
+struct RowVec(Vec<i32>);
+
+impl<'v> FromFormValue<'v> for RowVec {
+    type Error = &'v RawStr;
+
+    fn from_form_value(form_value: &'v RawStr) -> Result<RowVec, &'v RawStr> {
+        Ok(RowVec(form_value
+            .split(',')
+            .filter_map(|r| r.to_string().parse::<i32>().ok())
+            .collect()))
+    }
+}
+
+fn parse_to_opt_vec(val: Option<String>) -> Option<Vec<i32>> {
+    match val {
+        Some(v) => Some(v
+            .split(',')
+            .filter_map(|r| r.parse::<i32>().ok())
+            .collect()),
+        None => None,
+    }
+}
+
 #[derive(FromForm,Clone,Serialize,Deserialize,Queryable,Debug)]
 pub struct SearchForm {
     pub search_string: Option<String>,
-    pub prod_size_id: Option<i32>,
-    pub product_state_id: Option<i32>,
+    pub prod_size_id: Option<String>,
+    pub product_state_id: Option<String>,
     pub limit: i32,
     pub offset: i32,
-    pub subcategory_id: Option<i32>,
-    pub category_id: Option<i32>,
-    pub prod_brand_id: Option<i32>,
-    pub prod_type_id: Option<i32>,
+    pub subcategory_id: Option<String>,
+    pub category_id: Option<String>,
+    pub prod_brand_id: Option<String>,
+    pub prod_type_id: Option<String>,
     pub order_by: Option<String>,
     pub user_id: Option<i32>,
 }
 
+#[derive(Serialize,Clone,Debug,QueryableByName)]
+pub struct ProductNews {
+    #[sql_type="Integer"]
+    pub id: i32,
+    #[sql_type="Text"]
+    pub title: String,
+    #[sql_type="Text"]
+    pub descr: String,
+    #[sql_type="Text"]
+    pub pictures: String,
+}
+
 impl ProductCard {
 
-    pub fn in_news(user_id: i32, conn: &PgConnection) -> Result<Vec<ProductCard>,Error> {
+    pub fn in_news(user_id: Option<i32>, conn: &PgConnection) -> Result<Vec<ProductNews>,Error> {
         let r = diesel::sql_query(include_str!("../../SQL/get_in_news.sql"))
         .bind::<Nullable<Integer>, _>(user_id)
-        .get_results::<ProductCard>(conn)?;
+        .get_results::<ProductNews>(conn)?;
         Ok(r)
     }
 
@@ -172,16 +211,16 @@ impl ProductCard {
 
     pub fn filter_search(form: SearchForm, conn: &PgConnection) -> Vec<ProductCard> {
     
-        diesel::sql_query(include_str!("../../SQL/filter.sql"))
+        diesel::sql_query("SELECT * FROM filters($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)")
             .bind::<Nullable<Text>,_>(form.search_string)
-            .bind::<Nullable<Integer>,_>(form.prod_size_id)
-            .bind::<Nullable<Integer>,_>(form.product_state_id)
+            .bind::<Nullable<Array<Integer>>,_>(parse_to_opt_vec(form.prod_size_id))
+            .bind::<Nullable<Array<Integer>>,_>(parse_to_opt_vec(form.product_state_id))
             .bind::<Integer,_>(form.limit)
             .bind::<Integer,_>(form.offset)
-            .bind::<Nullable<Integer>,_>(form.subcategory_id)
-            .bind::<Nullable<Integer>,_>(form.category_id)
-            .bind::<Nullable<Integer>,_>(form.prod_brand_id)
-            .bind::<Nullable<Integer>,_>(form.prod_type_id)
+            .bind::<Nullable<Array<Integer>>,_>(parse_to_opt_vec(form.subcategory_id))
+            .bind::<Nullable<Array<Integer>>,_>(parse_to_opt_vec(form.category_id))
+            .bind::<Nullable<Array<Integer>>,_>(parse_to_opt_vec(form.prod_brand_id))
+            .bind::<Nullable<Array<Integer>>,_>(parse_to_opt_vec(form.prod_type_id))
             .bind::<Nullable<Text>,_>(form.order_by)
             .bind::<Nullable<Integer>,_>(form.user_id)
             .load::<ProductCard>(conn)
@@ -338,7 +377,23 @@ impl ProductPromotions {
             Err(_) => Ok(false),
             Ok(i) => Ok(i.is_pre_order),
         }
+    }
 
+    pub fn exists(prod_id: i32, conn: &PgConnection) -> Result<bool,Error> {
+        use crate::schema::promotions::dsl::*;
+        use chrono::Duration;
+
+        let r: Vec<ProductPromotions> = promotions
+            .filter(product_id.eq(prod_id))
+            .get_results::<ProductPromotions>(conn)?
+            .into_iter()
+            .filter( | prom | {
+             -(chrono::Local::now().naive_utc()
+                    .signed_duration_since( prom.prod_bought_date + Duration::days(7))
+                    .num_days()) < 7
+            })
+            .collect();
+        Ok(r.len() > 0)
     }
 }
 
@@ -472,13 +527,17 @@ impl Product {
 
     }
 
-    pub fn get_for_profile(u_id: i32, conn: &PgConnection) -> Result<Vec<(i32,String)>,Error> {
+    pub fn get_for_profile(seller_id: i32, customer_id: i32, conn: &PgConnection) -> Result<Vec<(i32,String)>,Error> {
 
         use crate::schema::users;
+        use crate::schema::rating;
 
         Ok(products::table
-            .filter(products::seller_id.eq(u_id))
-            .filter(products::status.eq("published").or(products::status.eq("sold")))
+            .filter(products::seller_id.eq(seller_id))
+            .filter(products::status.eq("sold"))
+            .filter(products::bought_with.eq(customer_id))
+            .left_outer_join(rating::table.on(rating::voter_id.is_null()))
+            //.filter(rating::voter_id.is_null())
             .inner_join(users::table.on(products::seller_id.eq(users::id)))
             .select((products::id,products::title))
             .get_results::<(i32,String)>(conn)?)

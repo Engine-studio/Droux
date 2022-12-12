@@ -19,7 +19,7 @@
             <div class="product__top">
                 <div class="product__name-and-date">
                     <h1 class="product__name">{{ product.title }}</h1>
-                    <span class="product__date">Опубликовано {{ product.create_datetime | date }}</span>
+                    <span class="product__date">Опубликовано {{ product.create_datetime | date(format="%d.%m.%Y") }}</span>
                 </div>
                 <div class="product__price-and-size">
                     <span class="product__price">
@@ -54,7 +54,7 @@
                 <div class="product__info">
                     <div class="product__author">
                         <div class="author__name-and-reg-date">
-                            <a href="/profile/users/{{ seller.id }}/reviews">
+                            <a href="/profile/users/{{ seller.id }}/profile">
                                 <span class="author__name">Продавец {{ seller.username }}</span>
                             </a>
                             <span class="author__reg-date">На Droux с {{ seller.register_data | date }}</span>
