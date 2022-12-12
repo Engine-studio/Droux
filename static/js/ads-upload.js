@@ -19,6 +19,11 @@ if (address.includes("order_by=Date")) {
     body = "search_string=&limit=12&order_by=Views";
 }
 
+if (address.includes('search_string=') && (address.includes('search_string=&') === false)) {
+    filtersActive = true;
+    body = address.slice(address.indexOf('?')+1);
+}
+
 if (address.includes("prod_type_id=1")) {
     filtersActive = true;
     document.getElementById('ad_types1').checked = true;
@@ -145,10 +150,9 @@ function useFilters() {
     request.send(body  + '&offset=' + (12 * portions));
     request.onload = function() {
         jsonToAds(request.response);
+        portions += 1;
+        timeout = 0;
     }
-    portions += 1;
-    timeout = 0;
-
 }
 
 function request_part(n, alias) {
@@ -171,12 +175,6 @@ function jsonToAds(response) {
     let resp = JSON.parse(response);
     if (resp.length < 12) {
         stopItFlag = true;
-    }
-    if ((resp.length === 0) && (portions === 0)) {
-        let notFound = document.createElement('div');
-        notFound.innerHTML='По вашему запросу ничего не найдено. <p>Измените запрос или фильтры</p>';
-        notFound.id = 'not_found';
-        document.getElementsByClassName('search-results')[0].append(notFound);
     }
     for (let i = 0; i < resp.length; i++) {
         let newAd = document.createElement('div');
@@ -228,6 +226,13 @@ function jsonToAds(response) {
     }
     if (resp.length === 12) {
         stopItFlag = false;
+    }
+
+    if ((resp.length === 0) && (portions === 0) && (document.getElementById('not_found') === null) && (document.getElementsByClassName('ad').length === 0)) {
+        let notFound = document.createElement('div');
+        notFound.innerHTML='По вашему запросу ничего не найдено. <p>Измените запрос или фильтры</p>';
+        notFound.id = 'not_found';
+        document.getElementsByClassName('search-results')[0].append(notFound);
     }
     document.getElementsByClassName('filters__preloader')[0].classList.add('filters__preloader_hidden');
 
