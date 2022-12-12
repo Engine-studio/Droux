@@ -15,15 +15,15 @@ pub fn send_auth_link(link: String, email: String) {
     use lettre::{Message, SmtpTransport, Transport};
 
     let email = Message::builder()
-    .from("DrouxTeam <noreply@droux.ru>".parse().unwrap())
+    .from("drouxgroup@gmail.com".parse().unwrap())
   //  .reply_to(email.parse().unwrap())
     .to(email.parse().unwrap())
     .subject("Verify your account")
     .body(link)
     .unwrap();
 
-    let creds = Credentials::new("redberrymanager.contact@gmail.com"
-        .to_string(), "a22TsqWo6P9F".to_string());
+    let creds = Credentials::new("drouxgroup@gmail.com".to_string(), 
+        "X5GYebjMARCR8".to_string());
 
     // Open a remote connection to gmail
     let mailer = SmtpTransport::relay("smtp-pulse.com")
