@@ -41,7 +41,7 @@
                 <span class="promotion__price">599 ₽</span>
             </div>
             <div class="promotion__item-div promotion__item-div_nothing">
-                <input type="checkbox" id="nothing" name="none" value="true">
+                <input type="checkbox" name="none" checked id="nothing" value="true" checked>
                 <label for="nothing">Продвижение публикации без услуг</label>
                 <span class="promotion__price">Бесплатно</span>
             </div>
@@ -57,4 +57,5 @@
     </main>
 {% endblock main %}
 {% block scripts %}
+<script src="/static/js/promotion-checkbox.js"></script>
 {% endblock scripts %}
