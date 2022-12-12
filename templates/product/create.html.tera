@@ -154,6 +154,10 @@
                     </div>
                 </div>
             </div>
+            <div class="ad-form__city ad-form__city_mobile">
+                            <div class="ad-form__label">Город</div>
+                            <input type="text">
+            </div>
             <div class="ad-form__price">
                 <div class="ad-form__label">Цена</div>
                 <div class="price__input"><input type="text" id="price"><span>₽</span></div>
@@ -188,17 +192,10 @@
                     <img src="/static/assets/arrow-right.svg" alt="">
                 </div>
             </div>
-            <button type="button" class="mobile__button mobile__button_3 button" onclick="turnPage3()" disabled>
-                Продолжить
-            </button>
+            <input type="button" value="Продолжить" class="button ad-form__submit-button mobile__button mobile__button_3" onclick="PostProduct()">
         </div>
-        <div class="mobile__page_4 mobile__page">
-            <h2 class="ad-form__header ad-form__header_params">Контакты</h2>
-            <div class="ad-form__num">
-                <div class="ad-form__label">Телефон</div>
-                <input type="text">
-            </div>
-            <div class="ad-form__email">
+        <div class="city-mobile-hide">
+            <div class="ad-form__city">
                 <div class="ad-form__label">Город</div>
                 <input type="text">
             </div>
