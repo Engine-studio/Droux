@@ -449,6 +449,64 @@ input[type=text] {
     display: none;
 }
 
+.commission-modal__layer {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    left: 0;
+    top: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 20;
+}
+
+.commission-modal__layer_visible {
+    display: flex;
+}
+
+
+.commission-modal {
+    width: 750px;
+    height: 450px;
+}
+
+.commission-modal__close{
+    height: 1rem;
+    cursor: pointer;
+}
+
+.commission-modal__header {
+    background-color: black;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    padding: 15px;
+    font-size: 0.8rem;
+    align-content: center;
+}
+
+.commission-modal__title {
+    margin: 0;
+}
+
+.commission-modal__content {
+    background-color: white;
+    border: 1px solid black;
+    padding: 1rem;
+}
+
+.commission-modal__button {
+    width: 381px;
+    background-color: black;
+    font-size: 18px;
+    color: white;
+    margin: 25px 0;
+    min-height: 38px;
+}
+
 @media (max-width: 1200px) {
     .city-mobile-hide {
         display: none;

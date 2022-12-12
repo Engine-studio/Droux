@@ -272,3 +272,22 @@ async function EditProduct() {
     return false;
 }
 
+const commission = document.querySelector('.page-top__commission-info > a');
+
+const commission_close_1 = document.getElementsByClassName('commission-modal__close')[0];
+const commission_close_2 = document.getElementsByClassName('commission-modal__button')[0];
+
+const modal = document.getElementsByClassName('commission-modal__layer')[0];
+
+commission.addEventListener('click', (e) => {
+    e.preventDefault();
+    modal.classList.add('commission-modal__layer_visible');
+});
+
+commission_close_1.addEventListener('click', () => {
+    modal.classList.remove('commission-modal__layer_visible');
+});
+
+commission_close_2.addEventListener('click', () => {
+    modal.classList.remove('commission-modal__layer_visible');
+});
