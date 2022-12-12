@@ -65,8 +65,11 @@ function checkAndAdd() {
         }
         portions+=1;
         request.onload = function() {
-            jsonToAds(request.response);
-            changeSize();
+            setTimeout(() => {
+                preloader.classList.toggle('filters__preloader_hidden');
+                jsonToAds(request.response);
+                changeSize();
+            }, 1000);
         }
     }
 }
@@ -155,7 +158,6 @@ function useFilters() {
 
 function jsonToAds(response) {
     let resp = JSON.parse(response);
-    preloader.classList.toggle('filters__preloader_hidden')
     if (resp.length < 12) {
         clearInterval(timer);
     }
