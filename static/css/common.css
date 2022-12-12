@@ -590,6 +590,12 @@ input[type=checkbox] + label, .promotion input[type=radio] + label {
         width: 100%;
         min-height: 40px;
     }
+    .services__container {
+        justify-content: center;
+    }
+    .services__item > span {
+        text-align: center;
+    }
     .services .services__container .services__item {
         font-size: 12px;
         min-width: 30%;
@@ -662,8 +668,13 @@ input[type=checkbox] + label, .promotion input[type=radio] + label {
         width: 100%;
     }
 
-    .services__container {
-        justify-content: space-between;
+    .services__container:not(.doesntexist) {
+        justify-content: center;
+        margin: 0 0 0 12px;
+    }
+
+    .services__icon:not(.doesntexist) {
+        margin-right: -5px;
     }
 
     .header__base {
@@ -933,4 +944,10 @@ input[type=checkbox] + label, .promotion input[type=radio] + label {
         margin-bottom: 37px;
     }
 
+}
+
+@media (max-width: 350px) {
+    .services__item > span {
+        font-size: 10px;
+    }
 }
