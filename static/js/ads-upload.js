@@ -66,7 +66,9 @@ function checkAndAdd() {
             setTimeout(() => {
                 document.getElementsByClassName('filters__preloader')[0].classList.add('filters__preloader_hidden');
                 jsonToAds(request.response);
-                changeSize();
+                if (request.response.length > 0) {
+                    changeSize();
+                }
             }, 1000);
         }
     }
@@ -99,9 +101,9 @@ headerSearchButton.addEventListener('click', NewSearch);
 let timeout = 0;
 function NewSearch() {
     if (timeout != 0) {
-        clearTimeout(timeout);
+        timeout = clearTimeout(timeout);
     }
-    timer = setInterval(checkAndAdd,3000);
+    stopItFlag = false;
     timeout = setTimeout(useFilters, 1000);
 }
 function useFilters() {
@@ -165,9 +167,16 @@ function request_part(n, alias) {
 
 
 function jsonToAds(response) {
+
     let resp = JSON.parse(response);
     if (resp.length < 12) {
-        clearInterval(timer);
+        stopItFlag = true;
+    }
+    if (resp.length === 0 && portions === 1) {
+        let notFound = document.createElement('div');
+        notFound.innerHTML='По вашему запросу ничего не найдено. <p>Измените запрос или фильтры</p>';
+        notFound.id = 'not_found';
+        document.getElementsByClassName('search-results')[0].append(notFound);
     }
     for (let i = 0; i < resp.length; i++) {
         let newAd = document.createElement('div');
@@ -217,6 +226,9 @@ function jsonToAds(response) {
         listenFav();
         changeSize();
     }
+    if (resp.length === 12) {
+        stopItFlag = false;
+    }
     document.getElementsByClassName('filters__preloader')[0].classList.add('filters__preloader_hidden');
-    stopItFlag = false;
+
 }
