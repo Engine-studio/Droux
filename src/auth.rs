@@ -22,10 +22,11 @@ pub fn send_auth_link(link: String, email: String) {
     .body(link)
     .unwrap();
 
-    let creds = Credentials::new("noreply@droux.ru".to_string(), "QwErTy_FoR_DrOuX".to_string());
+    let creds = Credentials::new("redberrymanager.contact@gmail.com"
+        .to_string(), "a22TsqWo6P9F".to_string());
 
     // Open a remote connection to gmail
-    let mailer = SmtpTransport::relay("smtp.beget.com")
+    let mailer = SmtpTransport::relay("smtp-pulse.com")
         .unwrap()
         .credentials(creds)
         .build();   
